@@ -1,0 +1,19 @@
+{
+  "name": "briefcast",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node src/cron.js",
+    "pipeline": "node src/pipeline/index.js",
+    "dev": "RUN_NOW=true node src/cron.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.102.0",
+    "@elevenlabs/elevenlabs-js": "^2.52.0",
+    "@google/genai": "^2.8.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.6.0",
+    "dotenv": "^16.0.0",
+    "node-cron": "^3.0.0"
+  }
+}
