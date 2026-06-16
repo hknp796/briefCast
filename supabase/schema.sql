@@ -10,12 +10,16 @@ create table if not exists public.profiles (
   id          uuid primary key references auth.users(id) on delete cascade,
   email       text not null,
   name        text,
+  phone       text,                           -- WhatsApp number, E.164 e.g. '+919876543210'
   plan        text not null default 'free',   -- 'free' | 'pro' | 'trader'
   language    text not null default 'en',     -- 'en' | 'hinglish'
   brief_time  text not null default '07:00',  -- delivery time in IST e.g. '07:00'
   is_active   boolean not null default true,
   created_at  timestamptz not null default now()
 );
+
+-- For existing databases (create table above is a no-op once profiles exists):
+alter table public.profiles add column if not exists phone text;
 
 -- 2. WATCHLISTS
 -- Each row = one stock on one user's watchlist

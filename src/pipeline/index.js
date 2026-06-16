@@ -5,6 +5,7 @@ import { fetchMarketData } from './fetchMarketData.js'
 import { fetchNews } from './fetchNews.js'
 import { generateScripts } from './generateScripts.js'
 import { generateAudio } from './generateAudio.js'
+import { deliverBriefs } from './deliverBriefs.js'
 
 // Logs a pipeline stage result to DB for monitoring
 async function logStage(stage, status, message, durationMs) {
@@ -69,6 +70,9 @@ export async function runPipeline() {
 
     // Stage 5: Convert each script to an MP3 and store it
     await runStage('audio', generateAudio)
+
+    // Stage 6: Deliver each ready brief's audio link over WhatsApp
+    await runStage('delivery', deliverBriefs)
 
     const totalDuration = Math.round((Date.now() - runStart) / 1000)
     console.log(`\n[pipeline] ✅ All stages complete in ${totalDuration}s`)
