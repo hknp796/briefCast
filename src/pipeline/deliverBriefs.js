@@ -3,33 +3,35 @@ import axios from 'axios'
 import supabase from '../supabaseClient.js'
 
 // ─────────────────────────────────────────────
-// Stage 6: Delivery — send each ready brief's audio link over WhatsApp
-// (Meta WhatsApp Cloud API) and mark it delivered.
+// Stage 6: Delivery — push each ready brief's audio to the user over Telegram
+// and mark it delivered.
 //
-// A 3am push is a BUSINESS-INITIATED message, which Meta requires to be sent as
-// an APPROVED message TEMPLATE (free-form text only works inside the 24h customer
-// service window). So we send a template with two body parameters:
-//   {{1}} = the user's name      {{2}} = the audio link
-// Create/approve a template in Meta → WhatsApp Manager whose body matches, e.g.:
-//   "Good morning {{1}} ☀️ Your BriefCast market brief is ready: {{2}}"
-// then put its name in WHATSAPP_TEMPLATE_NAME.
+// Why Telegram over WhatsApp: a 3am business-initiated WhatsApp message must use
+// a pre-approved message TEMPLATE (business verification, registered number,
+// 24h-window rules, per-conversation billing). Telegram has none of that — a bot
+// can message any user who has /start-ed it, for free, and can send the MP3
+// itself (not just a link) so the user just taps play.
+//
+// Setup: create a bot via @BotFather → put its token in TELEGRAM_BOT_TOKEN.
+// Each user gets a chat_id by sending /start to the bot; store it on
+// profiles.telegram_chat_id.
 // ─────────────────────────────────────────────
 
-const API_VERSION = process.env.WHATSAPP_API_VERSION || 'v21.0'
+const API_BASE = 'https://api.telegram.org'
 
-// Cloud API throughput is fine, but a fresh/unverified number is capped on
-// unique recipients per day. Keep concurrency low to avoid tripping rate limits.
+// Telegram allows ~30 msgs/sec to different users; keep concurrency low to stay
+// well clear and respect Supabase Storage serving the audio URLs.
 const CONCURRENCY = 5
 
 // ─────────────────────────────────────────────
-// 1. Fetch today's ready, not-yet-delivered briefs with the recipient's phone.
+// 1. Fetch today's ready, not-yet-delivered briefs with the recipient's chat_id.
 // `delivered=false` makes re-runs idempotent — already-sent briefs are skipped.
-// briefs.user_id is an FK to profiles, so the nested select pulls phone + name.
+// briefs.user_id is an FK to profiles, so the nested select pulls chat_id + name.
 // ─────────────────────────────────────────────
 async function getDeliverableBriefs(date) {
   const { data, error } = await supabase
     .from('briefs')
-    .select('user_id, date, audio_url, profiles(phone, name)')
+    .select('user_id, date, audio_url, profiles(telegram_chat_id, name)')
     .eq('date', date)
     .eq('status', 'ready')
     .eq('delivered', false)
@@ -39,53 +41,34 @@ async function getDeliverableBriefs(date) {
 }
 
 // ─────────────────────────────────────────────
-// 2. Normalise a phone number for the Cloud API (digits only, no '+').
+// 2. Send one audio brief via the Telegram Bot API.
+// `audio` accepts a public HTTP URL — Telegram fetches and re-hosts it, so we
+// pass the Supabase Storage URL directly (no download/upload needed here).
 // ─────────────────────────────────────────────
-function normalisePhone(phone) {
-  return (phone || '').replace(/[^\d]/g, '')
-}
-
-// ─────────────────────────────────────────────
-// 3. Send one template message via the Cloud API
-// ─────────────────────────────────────────────
-async function sendWhatsApp(to, name, audioUrl) {
-  const url = `https://graph.facebook.com/${API_VERSION}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`
+async function sendTelegramAudio(chatId, name, audioUrl) {
+  const url = `${API_BASE}/bot${process.env.TELEGRAM_BOT_TOKEN}/sendAudio`
 
   const payload = {
-    messaging_product: 'whatsapp',
-    to,
-    type: 'template',
-    template: {
-      name: process.env.WHATSAPP_TEMPLATE_NAME,
-      language: { code: process.env.WHATSAPP_TEMPLATE_LANG || 'en' },
-      components: [
-        {
-          type: 'body',
-          parameters: [
-            { type: 'text', text: name },
-            { type: 'text', text: audioUrl }
-          ]
-        }
-      ]
-    }
+    chat_id: chatId,
+    audio: audioUrl,
+    title: 'BriefCast — Market Brief',
+    performer: 'BriefCast',
+    caption: `Good morning ${name} ☀️ Your market brief is ready.`
   }
 
   try {
     await axios.post(url, payload, {
-      headers: {
-        Authorization: `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     })
   } catch (err) {
-    // Meta returns structured errors — surface the useful message.
-    const apiMsg = err.response?.data?.error?.message
+    // Telegram returns { ok:false, description } — surface the useful message.
+    const apiMsg = err.response?.data?.description
     throw new Error(apiMsg || err.message)
   }
 }
 
 // ─────────────────────────────────────────────
-// 4. Mark a brief delivered so re-runs don't re-send it
+// 3. Mark a brief delivered so re-runs don't re-send it
 // ─────────────────────────────────────────────
 async function markDelivered(userId, date) {
   const { error } = await supabase
@@ -98,15 +81,15 @@ async function markDelivered(userId, date) {
 }
 
 // ─────────────────────────────────────────────
-// 5. Process a single brief end to end
+// 4. Process a single brief end to end
 // ─────────────────────────────────────────────
 async function processBrief(brief) {
   const { user_id, date, audio_url } = brief
   const name = brief.profiles?.name || 'there'
-  const to = normalisePhone(brief.profiles?.phone)
+  const chatId = brief.profiles?.telegram_chat_id
 
-  if (!to) {
-    console.warn(`[deliverBriefs] ${user_id.slice(0, 8)}: no phone on profile, skipping`)
+  if (!chatId) {
+    console.warn(`[deliverBriefs] ${user_id.slice(0, 8)}: no telegram_chat_id on profile, skipping`)
     return { ok: false }
   }
   if (!audio_url) {
@@ -114,15 +97,15 @@ async function processBrief(brief) {
     return { ok: false }
   }
 
-  await sendWhatsApp(to, name, audio_url)
+  await sendTelegramAudio(chatId, name, audio_url)
   await markDelivered(user_id, date)
 
-  console.log(`[deliverBriefs] ✓ ${name} (${user_id.slice(0, 8)}) — sent to ${to}`)
+  console.log(`[deliverBriefs] ✓ ${name} (${user_id.slice(0, 8)}) — sent to chat ${chatId}`)
   return { ok: true }
 }
 
 // ─────────────────────────────────────────────
-// 6. Simple concurrency pool — process N briefs at a time
+// 5. Simple concurrency pool — process N briefs at a time
 // ─────────────────────────────────────────────
 async function runPool(briefs, limit) {
   let index = 0
@@ -150,13 +133,11 @@ async function runPool(briefs, limit) {
 // Main export — called by the pipeline after audio is generated
 // ─────────────────────────────────────────────
 export async function deliverBriefs() {
-  // WhatsApp isn't wired up yet — skip delivery (don't abort the run) until the
-  // Meta Cloud API env vars are set. Briefs stay status='ready', delivered=false,
-  // so they'll be picked up automatically on the next run once configured.
-  const required = ['WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_TEMPLATE_NAME']
-  const missing = required.filter(k => !process.env[k])
-  if (missing.length) {
-    console.log(`[deliverBriefs] WhatsApp not configured (missing: ${missing.join(', ')}) — skipping delivery`)
+  // Telegram isn't wired up yet — skip delivery (don't abort the run) until
+  // TELEGRAM_BOT_TOKEN is set. Briefs stay status='ready', delivered=false, so
+  // they'll be picked up automatically on the next run once configured.
+  if (!process.env.TELEGRAM_BOT_TOKEN) {
+    console.log('[deliverBriefs] Telegram not configured (missing TELEGRAM_BOT_TOKEN) — skipping delivery')
     return { skipped: true, success: 0, failed: 0 }
   }
 
