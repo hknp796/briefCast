@@ -14,8 +14,9 @@ A nightly pipeline runs at 3am IST. It collects every active user's watchlist,
 deduplicates the tickers, fetches overnight price data and news for each ticker
 once (shared across all users), then for each user generates a personalised
 spoken script with an LLM and converts that script to an MP3 with text-to-speech.
-The MP3 is stored and (eventually) delivered to the user over WhatsApp before the
-9:15am market open.
+The MP3 is stored and delivered to the user over Telegram (the bot sends the audio
+file itself) before the 9:15am market open. Users sign up and manage their
+watchlist entirely through the same Telegram bot — no web app.
 
 The key efficiency idea: market data and news are fetched **once per unique
 ticker**, not once per user. 1000 users × 10 stocks is not 10,000 fetches — after
@@ -32,8 +33,11 @@ per-user.
 - **News:** Serper API (`google.serper.dev/news`)
 - **Script generation:** Google Gemini 2.5 Flash via `@google/genai` (free tier)
 - **Audio (TTS):** ElevenLabs via `@elevenlabs/elevenlabs-js`
+- **Delivery + signup:** Telegram Bot API — outbound via `axios` (deliverBriefs.js),
+  inbound signup/watchlist bot via `telegraf` (src/bot/telegramBot.js)
 - **Scheduler:** `node-cron`
 - **Other deps:** `@supabase/supabase-js`, `axios`, `dotenv`
+- **Present but unused:** `@anthropic-ai/sdk` (scripts currently use Gemini, not Claude)
 
 ---
 
@@ -51,6 +55,8 @@ briefcast/
 └── src/
     ├── supabaseClient.js     # Supabase client singleton (service_role key)
     ├── cron.js               # scheduler — runs pipeline at 3am IST
+    ├── bot/
+    │   └── telegramBot.js    # inbound signup/watchlist bot (telegraf, long-poll)
     └── pipeline/
         ├── index.js          # orchestrator — runs all stages in order
         ├── getUniqueTickers.js   # stage 1: dedupe watchlists
@@ -58,7 +64,8 @@ briefcast/
         ├── fetch_prices.py       #   Python helper, yfinance
         ├── fetchNews.js          # stage 3: news headlines (Serper)
         ├── generateScripts.js    # stage 4: Gemini → brief script
-        └── generateAudio.js      # stage 5: ElevenLabs → MP3 → Storage
+        ├── generateAudio.js      # stage 5: ElevenLabs → MP3 → Storage
+        └── deliverBriefs.js      # stage 6: send audio over Telegram
 ```
 
 ---
@@ -72,9 +79,12 @@ briefcast/
 | 3 | `news` | fetchNews.js | Serper API | `ticker_data.news` (jsonb) |
 | 4 | `scripts` | generateScripts.js | ticker_data + watchlists | `briefs.script` (status=pending) |
 | 5 | `audio` | generateAudio.js | briefs (pending) | Storage + `briefs.audio_url` (status=ready) |
+| 6 | `delivery` | deliverBriefs.js | briefs (ready, undelivered) + profiles.telegram_chat_id | Telegram audio + `briefs.delivered=true` |
 
 Each stage is timed and logged to the `pipeline_logs` table via the `runStage()`
-wrapper in `index.js`. A failure in any stage aborts the run (fail-fast).
+wrapper in `index.js`. A failure in any stage aborts the run (fail-fast) — except
+delivery, which self-skips (does not abort) when `TELEGRAM_BOT_TOKEN` is unset, so
+briefs stay `ready`/`undelivered` and get picked up on the next run once configured.
 
 ---
 
@@ -83,8 +93,8 @@ wrapper in `index.js`. A failure in any stage aborts the run (fail-fast).
 Five tables, defined in `supabase/schema.sql`:
 
 - **profiles** — app-level user data. PK is `id` (FK → `auth.users.id`).
-  Columns: email, name, plan (`free`/`pro`/`trader`), language (`en`/`hinglish`),
-  brief_time, is_active.
+  Columns: email, name, `telegram_chat_id` (the user's identity — set on `/start`),
+  plan (`free`/`pro`/`trader`), language (`en`/`hinglish`), brief_time, is_active.
 - **watchlists** — one row per (user, ticker). Unique on `(user_id, ticker)`.
 - **ticker_data** — nightly cache, one row per `(ticker, date)`. Holds prices,
   gap_pct, volume, and `news` (jsonb array of `{title, snippet, source, url}`).
@@ -106,7 +116,9 @@ SUPABASE_SERVICE_KEY=...                   # service_role key, NOT anon key
 SERPER_API_KEY=...
 GEMINI_API_KEY=...                         # free at aistudio.google.com
 ELEVENLABS_API_KEY=...
-ELEVENLABS_VOICE_ID=21m00Tcm4TlvDq8ikWAM   # optional, defaults to "Rachel"
+ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL   # optional, defaults to "Sarah"
+TELEGRAM_BOT_TOKEN=...                      # from @BotFather; SAME token for the
+                                            #   delivery step and the signup bot
 PYTHON_PATH=/Users/<you>/Desktop/briefcast/venv/bin/python3   # local only; omit on server
 ```
 
@@ -118,7 +130,7 @@ PYTHON_PATH=/Users/<you>/Desktop/briefcast/venv/bin/python3   # local only; omit
 # Activate Python venv first (local dev)
 source venv/bin/activate
 
-# Run the entire pipeline immediately (all 5 stages)
+# Run the entire pipeline immediately (all 6 stages)
 RUN_NOW=true node src/cron.js
 
 # Or run the pipeline without the scheduler
@@ -127,37 +139,47 @@ node src/pipeline/index.js
 # Run a single stage standalone (for testing)
 node src/pipeline/generateScripts.js
 node src/pipeline/generateAudio.js
+node src/pipeline/deliverBriefs.js
 
 # Start the scheduler (production — waits for 3am IST)
 npm start
+
+# Start the Telegram signup bot (separate long-running process — run alongside npm start)
+npm run bot
 ```
 
 npm scripts: `start` → `node src/cron.js`, `pipeline` → `node src/pipeline/index.js`,
-`dev` → `RUN_NOW=true node src/cron.js`.
+`dev` → `RUN_NOW=true node src/cron.js`, `bot` → `node src/bot/telegramBot.js`.
 
 ---
 
 ## Current status
 
-**Done — the full data → script → audio core loop works:**
+**Done — the full data → script → audio → delivery loop works end to end:**
 - [x] Supabase schema + RLS
 - [x] Stage 1: ticker deduplication
 - [x] Stage 2: market data (yfinance)
 - [x] Stage 3: news (Serper)
 - [x] Stage 4: script generation (Gemini)
 - [x] Stage 5: audio generation (ElevenLabs → Supabase Storage)
+- [x] Stage 6: delivery (Telegram — bot sends the MP3, marks `delivered`)
 - [x] Orchestrator + cron scheduler
+- [x] Telegram signup bot (`src/bot/telegramBot.js`) — signup + watchlist over
+      chat (`/start`, `/add`, `/remove`, `/list`, `/language`, `/time`), replacing
+      manual SQL inserts. This supersedes the Next.js signup web app for now.
 
 **Not built yet:**
-- [ ] **Delivery** — `deliverBriefs.js`: read `status=ready` briefs, send audio
-      link via WhatsApp (WATI or Twilio). For testing, can email the link instead.
-- [ ] **Signup web app** — frontend (Next.js) for users to register and pick
-      their watchlist, replacing manual SQL inserts. Supabase Auth + Razorpay.
+- [ ] **Payments** — Razorpay. The `plan` (free/pro/trader) column exists but is
+      unenforced; no billing anywhere yet.
+- [ ] **Per-user brief_time delivery** — the pipeline runs once at 3am and delivers
+      to everyone in one pass; `profiles.brief_time` is collected by the bot but not
+      yet honoured for scheduling.
 - [ ] **Deployment** — Railway. Needs `requirements.txt` (`pip freeze`) and a
       `nixpacks.toml` declaring python312 + nodejs_20. On server, omit PYTHON_PATH
-      so it falls back to system `python3`.
+      so it falls back to system `python3`. Note: the cron pipeline and the Telegram
+      bot are two separate long-running processes — both need to run in production.
 
-**Suggested next file:** `deliverBriefs.js`.
+**Suggested next step:** deployment (`requirements.txt` + `nixpacks.toml`), or Razorpay.
 
 ---
 
@@ -200,6 +222,20 @@ npm scripts: `start` → `node src/cron.js`, `pipeline` → `node src/pipeline/i
 
 7. **`generateAudio.js` needs a public Storage bucket named `briefs-audio`.**
    Create it in Supabase → Storage before running stage 5.
+
+8. **Telegram delivery needs a *public* audio URL.** `sendAudio` passes the
+   Supabase Storage URL and Telegram fetches it — so the `briefs-audio` bucket must
+   be public (see gotcha 7). If the bucket is private, delivery fails.
+
+9. **The pipeline and the bot are two processes.** `npm start` runs the nightly
+   pipeline (outbound); `npm run bot` runs the signup bot (inbound). They share the
+   same `TELEGRAM_BOT_TOKEN` but are separate processes — the bot must stay running
+   to accept signups. Delivery self-skips (no abort) if the token is missing.
+
+10. **ElevenLabs free tier rejects some shared "library" voices** with
+    `402 paid_plan_required` (including defaults like Rachel/George/Brian/Lily). The
+    default voice is now "Sarah" (`EXAVITQu4vr4xnSDxMaL`); override via
+    `ELEVENLABS_VOICE_ID` if you hit a 402.
 
 ---
 
