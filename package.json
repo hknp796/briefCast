@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node src/cron.js",
+    "server": "node src/server.js",
     "pipeline": "node src/pipeline/index.js",
     "dev": "RUN_NOW=true node src/cron.js",
     "bot": "node src/bot/telegramBot.js"

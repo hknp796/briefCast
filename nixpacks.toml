@@ -1,0 +1,23 @@
+# Railway / Nixpacks build config for BriefCast.
+#
+# This is a Node.js app that shells out to Python (yfinance) via child_process,
+# so the image needs BOTH runtimes. Nixpacks would otherwise auto-detect only
+# Node and never install the Python deps.
+#
+# Python packages go into a venv at /opt/venv (Nix's system python is
+# externally-managed and rejects global pip installs). Point Node at it by
+# setting PYTHON_PATH=/opt/venv/bin/python3 in the Railway service variables.
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "python312", "gcc", "libffi"]
+
+[phases.install]
+cmds = [
+  "npm ci",
+  "python3 -m venv /opt/venv",
+  "/opt/venv/bin/pip install --upgrade pip",
+  "/opt/venv/bin/pip install -r requirements.txt",
+]
+
+[start]
+cmd = "node src/server.js"

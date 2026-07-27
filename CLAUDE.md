@@ -146,10 +146,35 @@ npm start
 
 # Start the Telegram signup bot (separate long-running process — run alongside npm start)
 npm run bot
+
+# Production (Railway) — ONE process that runs both the scheduler AND the bot
+npm run server        # node src/server.js
 ```
 
-npm scripts: `start` → `node src/cron.js`, `pipeline` → `node src/pipeline/index.js`,
-`dev` → `RUN_NOW=true node src/cron.js`, `bot` → `node src/bot/telegramBot.js`.
+npm scripts: `start` → `node src/cron.js`, `server` → `node src/server.js`
+(combined), `pipeline` → `node src/pipeline/index.js`, `dev` → `RUN_NOW=true
+node src/cron.js`, `bot` → `node src/bot/telegramBot.js`.
+
+---
+
+## Deployment (Railway)
+
+Deployed as a **single Railway service** built by Nixpacks. `src/server.js` is the
+combined entrypoint — it starts the cron scheduler and the Telegram bot in one
+process (the bot self-skips if `TELEGRAM_BOT_TOKEN` is unset).
+
+Files:
+- `nixpacks.toml` — installs Node 20 + Python 3.12, `npm ci`, then pip-installs
+  `requirements.txt` into a venv at `/opt/venv`. Start cmd: `node src/server.js`.
+- `requirements.txt` — `pip freeze` of the local venv (yfinance + deps).
+
+Railway setup:
+1. New project → Deploy from this repo. Nixpacks picks up `nixpacks.toml` automatically.
+2. Add all env vars from `.env.example` in the service **Variables** tab.
+   **Set `PYTHON_PATH=/opt/venv/bin/python3`** (the build installs Python deps there).
+3. Deploy. No exposed port is needed — this is a worker service, not a web server.
+4. Verify from **Logs**: you should see `[server] BriefCast is up …` and
+   `[bot] … running (long-polling)`. Message the bot `/start` to confirm inbound works.
 
 ---
 
@@ -167,6 +192,8 @@ npm scripts: `start` → `node src/cron.js`, `pipeline` → `node src/pipeline/i
 - [x] Telegram signup bot (`src/bot/telegramBot.js`) — signup + watchlist over
       chat (`/start`, `/add`, `/remove`, `/list`, `/language`, `/time`), replacing
       manual SQL inserts. This supersedes the Next.js signup web app for now.
+- [x] Deployment (Railway) — `nixpacks.toml` + `requirements.txt`; single service
+      via `src/server.js` (combined scheduler + bot). See "Deployment" section below.
 
 **Not built yet:**
 - [ ] **Payments** — Razorpay. The `plan` (free/pro/trader) column exists but is
@@ -174,12 +201,7 @@ npm scripts: `start` → `node src/cron.js`, `pipeline` → `node src/pipeline/i
 - [ ] **Per-user brief_time delivery** — the pipeline runs once at 3am and delivers
       to everyone in one pass; `profiles.brief_time` is collected by the bot but not
       yet honoured for scheduling.
-- [ ] **Deployment** — Railway. Needs `requirements.txt` (`pip freeze`) and a
-      `nixpacks.toml` declaring python312 + nodejs_20. On server, omit PYTHON_PATH
-      so it falls back to system `python3`. Note: the cron pipeline and the Telegram
-      bot are two separate long-running processes — both need to run in production.
-
-**Suggested next step:** deployment (`requirements.txt` + `nixpacks.toml`), or Razorpay.
+**Suggested next step:** Razorpay payments, or honouring per-user `brief_time`.
 
 ---
 
