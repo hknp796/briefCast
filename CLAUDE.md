@@ -27,7 +27,8 @@ per-user.
 
 ## Tech stack
 
-- **Runtime:** Node.js 20+, ES modules (`"type": "module"` in package.json)
+- **Runtime:** Node.js 22+ (required — `@supabase/realtime-js` needs a native
+  WebSocket, built in only from v22), ES modules (`"type": "module"` in package.json)
 - **Database / Auth / Storage:** Supabase (Postgres)
 - **Market data:** Python 3 + `yfinance`, called from Node via `child_process`
 - **News:** Serper API (`google.serper.dev/news`)
