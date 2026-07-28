@@ -11,8 +11,14 @@
 # Node 22 (not 20): @supabase/realtime-js requires a native WebSocket, which
 # Node only ships built-in from v22. On Node 20 the Supabase client throws
 # "Node.js 20 detected without native WebSocket support" at startup.
+#
+# nixLibs (not nixPkgs) is what lands on LD_LIBRARY_PATH at *runtime*. numpy's
+# manylinux wheel links against libstdc++.so.6, which the Nix python can't find
+# on its own — without this the pipeline dies with
+# "ImportError: libstdc++.so.6: cannot open shared object file".
 [phases.setup]
 nixPkgs = ["nodejs_22", "python312", "gcc", "libffi"]
+nixLibs = ["stdenv.cc.cc.lib", "zlib"]
 
 [phases.install]
 cmds = [

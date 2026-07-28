@@ -79,6 +79,13 @@ export async function fetchMarketData(tickers) {
     }
   }
 
+  // Every ticker failed — the Python side is broken (missing deps, bad
+  // PYTHON_PATH, network). Throw so the run fails fast instead of continuing
+  // to stages 4-6, which would find no ticker data and quietly deliver nothing.
+  if (successCount === 0) {
+    throw new Error(`all ${tickers.length} tickers failed — check PYTHON_PATH and yfinance install`)
+  }
+
   // Upsert all rows in one DB call — on conflict (ticker, date) update prices
   if (rows.length > 0) {
     const { error } = await supabase
