@@ -32,7 +32,14 @@ async function fetchBatch(tickers) {
 
   if (stderr) console.warn(`[fetchMarketData] Python stderr:`, stderr)
 
-  return JSON.parse(stdout)
+  try {
+    return JSON.parse(stdout)
+  } catch (err) {
+    // Surface what Python actually printed — a bare JSON.parse error alone
+    // gives no clue whether the script crashed, printed a traceback, or
+    // emitted a value JSON can't represent.
+    throw new Error(`unparseable Python output: ${err.message} — got: ${stdout.slice(0, 300)}`)
+  }
 }
 
 // Main export — fetches data for all tickers and upserts to DB
@@ -83,7 +90,7 @@ export async function fetchMarketData(tickers) {
   // PYTHON_PATH, network). Throw so the run fails fast instead of continuing
   // to stages 4-6, which would find no ticker data and quietly deliver nothing.
   if (successCount === 0) {
-    throw new Error(`all ${tickers.length} tickers failed — check PYTHON_PATH and yfinance install`)
+    throw new Error(`all ${tickers.length} tickers failed — see the per-batch errors above (check PYTHON_PATH, yfinance install, or network)`)
   }
 
   // Upsert all rows in one DB call — on conflict (ticker, date) update prices
