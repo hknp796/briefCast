@@ -5,8 +5,20 @@
 
 import sys
 import json
+import math
 import yfinance as yf
 from datetime import datetime, timedelta
+
+# yfinance returns NaN for an incomplete daily bar (thinly traded or newly
+# listed tickers, or a bar the exchange hasn't filled in yet). json.dumps would
+# emit a bare NaN, which is invalid JSON — JSON.parse on the Node side then
+# throws and takes the whole batch down with it. Treat NaN as missing instead.
+def clean(value, ndigits=2):
+    f = float(value)
+    if not math.isfinite(f):
+        return None
+    return round(f, ndigits)
+
 
 def fetch_ticker(symbol):
     # NSE symbols need .NS suffix for Yahoo Finance
@@ -24,13 +36,20 @@ def fetch_ticker(symbol):
         today   = hist.iloc[-1]
         prev    = hist.iloc[-2]
 
-        prev_close  = round(float(prev["Close"]), 2)
-        open_price  = round(float(today["Open"]), 2)
-        high        = round(float(today["High"]), 2)
-        low         = round(float(today["Low"]), 2)
-        close       = round(float(today["Close"]), 2)
-        volume      = int(today["Volume"])
-        gap_pct     = round((open_price - prev_close) / prev_close * 100, 2)
+        prev_close  = clean(prev["Close"])
+        open_price  = clean(today["Open"])
+        high        = clean(today["High"])
+        low         = clean(today["Low"])
+        close       = clean(today["Close"])
+        raw_volume  = clean(today["Volume"], 0)
+        volume      = int(raw_volume) if raw_volume is not None else None
+
+        # No prev_close or open means there is no gap to report — the whole
+        # point of the brief. Fail this ticker rather than emit a null gap.
+        if not prev_close or open_price is None:
+            return { "ticker": symbol, "error": "Incomplete price data" }
+
+        gap_pct = round((open_price - prev_close) / prev_close * 100, 2)
 
         return {
             "ticker":     symbol,
@@ -56,4 +75,14 @@ if __name__ == "__main__":
         sys.exit(0)
 
     results = [fetch_ticker(s) for s in symbols]
-    print(json.dumps(results))
+
+    # allow_nan=False so anything still non-finite raises here instead of
+    # printing invalid JSON. Degrade to per-ticker errors — a bad value in one
+    # ticker should not corrupt the batch.
+    try:
+        print(json.dumps(results, allow_nan=False))
+    except ValueError:
+        print(json.dumps([
+            { "ticker": s, "error": "Non-finite value in price data" }
+            for s in symbols
+        ]))
