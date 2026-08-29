@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────
+   BriefCast — dark-only by design.
+   The product exists in the hour before sunrise, so the palette is
+   pre-dawn: near-black ground, warm amber horizon, cool grey type.
+   ───────────────────────────────────────────── */
+@theme {
+  --color-ink:        #08090b;  /* page ground */
+  --color-surface:    #0e1015;  /* cards */
+  --color-surface-2:  #14171d;  /* raised / inset */
+  --color-line:       #1f242c;  /* hairlines */
+  --color-line-soft:  #171b22;
+
+  --color-bright:     #eef0f3;  /* primary type */
+  --color-muted:      #939aa6;  /* secondary type */
+  --color-faint:      #626a77;  /* tertiary / labels */
+
+  --color-dawn:       #f7a43c;  /* accent — sunrise amber */
+  --color-dawn-soft:  #ffc987;
+  --color-dawn-deep:  #b4691c;
+
+  --color-up:         #4ade80;
+  --color-down:       #f87171;
+
+  --font-sans:   var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:   var(--font-geist-mono), ui-monospace, monospace;
+  --font-serif:  var(--font-instrument-serif), Georgia, serif;
+}
+
+html {
+  background: var(--color-ink);
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-bright);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Thin, understated selection that keeps the dawn accent */
+::selection { background: var(--color-dawn); color: #16120b; }
+
+/* Waveform bars in the sample-brief player */
+@keyframes wave {
+  0%, 100% { transform: scaleY(0.35); }
+  50%      { transform: scaleY(1); }
+}
+.wave-bar {
+  transform-origin: center;
+  animation: wave 1.4s ease-in-out infinite;
+}

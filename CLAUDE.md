@@ -53,8 +53,16 @@ briefcast/
 ├── venv/                     # local Python venv (yfinance lives here)
 ├── supabase/
 │   └── schema.sql            # all 5 tables + RLS policies
+├── web/                      # Next.js marketing site (landing page) — see below
+│   ├── next.config.ts
+│   └── src/
+│       ├── app/              # App Router: layout.tsx, page.tsx, globals.css
+│       ├── components/       # Nav, Hero, ChatMock, SampleBrief, HowItWorks,
+│       │                     #   Features, Pricing, Faq, FinalCta, Footer
+│       └── lib/site.ts       # bot URL + pricing copy (single source of truth)
 └── src/
     ├── supabaseClient.js     # Supabase client singleton (service_role key)
+    ├── server.js             # combined entrypoint (cron + bot) — used on Railway
     ├── cron.js               # scheduler — runs pipeline at 3am IST
     ├── bot/
     │   └── telegramBot.js    # inbound signup/watchlist bot (telegraf, long-poll)
@@ -148,6 +156,10 @@ npm start
 # Start the Telegram signup bot (separate long-running process — run alongside npm start)
 npm run bot
 
+# Landing page (separate app, separate deploy — nothing to do with the pipeline)
+cd web && npm install && npm run dev     # http://localhost:3000
+cd web && npm run build                  # static export-able production build
+
 # Production (Railway) — ONE process that runs both the scheduler AND the bot
 npm run server        # node src/server.js
 ```
@@ -195,10 +207,20 @@ Railway setup:
       manual SQL inserts. This supersedes the Next.js signup web app for now.
 - [x] Deployment (Railway) — `nixpacks.toml` + `requirements.txt`; single service
       via `src/server.js` (combined scheduler + bot). See "Deployment" section below.
+- [x] Landing page (`web/`) — Next.js marketing site. Static, no auth, no database
+      access; every CTA deep-links to the Telegram bot. See the **frontend** skill.
 
 **Not built yet:**
 - [ ] **Payments** — Razorpay. The `plan` (free/pro/trader) column exists but is
-      unenforced; no billing anywhere yet.
+      unenforced; no billing anywhere yet. Pricing shown on the landing page
+      (`web/src/lib/site.ts`) is a PLACEHOLDER — set real numbers before launch and
+      enforce the per-plan watchlist limits in `generateScripts.js`.
+- [ ] **Linking web ↔ Telegram identity** — the bot mints a synthetic auth user
+      (`tg_<chat_id>@briefcast.local`) in `getOrCreateProfile()`. Anything on the web
+      that needs to know *which* user it is (checkout, a dashboard) needs a linking
+      flow — e.g. `t.me/briefcast_market_bot?start=<nonce>`, with the bot reading the
+      nonce from the `/start` payload. Decide this BEFORE building web auth, or you
+      get two `auth.users` rows per human and delivery breaks.
 - [ ] **Per-user brief_time delivery** — the pipeline runs once at 3am and delivers
       to everyone in one pass; `profiles.brief_time` is collected by the bot but not
       yet honoured for scheduling.
