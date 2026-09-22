@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     "market brief", "NSE", "Indian stock market", "audio brief",
     "retail traders", "watchlist", "pre-market", "Telegram",
   ],
+  manifest: "/site.webmanifest",
   openGraph: {
     type: "website",
     locale: "en_IN",

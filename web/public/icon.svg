@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background: Deepest ink gradient with subtle pre-dawn navy tinge -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#11141b" />
+      <stop offset="50%" stop-color="#08090b" />
+      <stop offset="100%" stop-color="#040406" />
+    </linearGradient>
+
+    <!-- Sun: Radiant morning dawn gradient -->
+    <linearGradient id="sun" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffeed1" />
+      <stop offset="25%" stop-color="#fca83e" />
+      <stop offset="70%" stop-color="#f78d1e" />
+      <stop offset="100%" stop-color="#b45814" />
+    </linearGradient>
+
+    <!-- Horizon Line: High-contrast golden morning horizon beam -->
+    <linearGradient id="horizon" gradientUnits="userSpaceOnUse" x1="56" y1="0" x2="456" y2="0">
+      <stop offset="0%" stop-color="#f7a43c" stop-opacity="0" />
+      <stop offset="15%" stop-color="#b4691c" stop-opacity="0.85" />
+      <stop offset="35%" stop-color="#fca83e" />
+      <stop offset="50%" stop-color="#fff6e5" />
+      <stop offset="65%" stop-color="#fca83e" />
+      <stop offset="85%" stop-color="#b4691c" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#f7a43c" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Ambient atmosphere glow -->
+    <radialGradient id="glow" cx="256" cy="336" r="230" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f7a43c" stop-opacity="0.45" />
+      <stop offset="40%" stop-color="#f7a43c" stop-opacity="0.18" />
+      <stop offset="75%" stop-color="#f7a43c" stop-opacity="0.03" />
+      <stop offset="100%" stop-color="#f7a43c" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Container border stroke -->
+    <linearGradient id="border" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#343d4f" />
+      <stop offset="100%" stop-color="#141822" />
+    </linearGradient>
+  </defs>
+
+  <!-- Squircle container -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)" stroke="url(#border)" stroke-width="12" />
+
+  <!-- Atmosphere glow -->
+  <ellipse cx="256" cy="336" rx="230" ry="160" fill="url(#glow)" />
+
+  <!-- Sun semicircle: R=170, base at y=336 -->
+  <path d="M 86 336 A 170 170 0 0 1 426 336 Z" fill="url(#sun)" />
+
+  <!-- Horizon beam: height 22px, centered vertically at y=336 -->
+  <rect x="56" y="325" width="400" height="22" rx="11" fill="url(#horizon)" />
+</svg>
