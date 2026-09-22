@@ -34,11 +34,11 @@ per-user.
 - **News:** Serper API (`google.serper.dev/news`)
 - **Script generation:** Google Gemini 2.5 Flash via `@google/genai` (free tier)
 - **Audio (TTS):** ElevenLabs via `@elevenlabs/elevenlabs-js`
-- **Delivery + signup:** Telegram Bot API — outbound via `axios` (deliverBriefs.js),
-  inbound signup/watchlist bot via `telegraf` (src/bot/telegramBot.js)
-- **Scheduler:** `node-cron`
+- **Delivery:** Telegram Bot API — outbound via `axios` (deliverBriefs.js)
+- **Signup bot:** Deno + `grammy`, deployed as a Supabase Edge Function
+  (`supabase/functions/telegram-bot`) — NOT part of the Node app
+- **Scheduler:** GitHub Actions cron (no in-app scheduler)
 - **Other deps:** `@supabase/supabase-js`, `axios`, `dotenv`
-- **Present but unused:** `@anthropic-ai/sdk` (scripts currently use Gemini, not Claude)
 
 ---
 
@@ -51,8 +51,14 @@ briefcast/
 ├── .gitignore                # ignores .env, node_modules/, venv/
 ├── package.json              # type: module; scripts below
 ├── venv/                     # local Python venv (yfinance lives here)
+├── .github/workflows/
+│   └── pipeline.yml          # nightly pipeline cron (3am IST) — the batch host
 ├── supabase/
-│   └── schema.sql            # all 5 tables + RLS policies
+│   ├── schema.sql            # all 5 tables + RLS policies
+│   ├── config.toml           # Supabase CLI config (verify_jwt off for the bot)
+│   └── functions/
+│       └── telegram-bot/
+│           └── index.ts      # the signup/watchlist bot (Deno + grammy)
 ├── web/                      # Next.js marketing site (landing page) — see below
 │   ├── next.config.ts
 │   └── src/
@@ -62,12 +68,9 @@ briefcast/
 │       └── lib/site.ts       # bot URL + pricing copy (single source of truth)
 └── src/
     ├── supabaseClient.js     # Supabase client singleton (service_role key)
-    ├── server.js             # combined entrypoint (cron + bot) — used on Railway
-    ├── cron.js               # scheduler — runs pipeline at 3am IST
-    ├── bot/
-    │   └── telegramBot.js    # inbound signup/watchlist bot (telegraf, long-poll)
     └── pipeline/
         ├── index.js          # orchestrator — runs all stages in order
+        ├── allowlist.js          # optional PIPELINE_USER_ALLOWLIST cost guard
         ├── getUniqueTickers.js   # stage 1: dedupe watchlists
         ├── fetchMarketData.js    # stage 2: prices (calls fetch_prices.py)
         ├── fetch_prices.py       #   Python helper, yfinance
@@ -129,7 +132,16 @@ ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL   # optional, defaults to "Sarah"
 TELEGRAM_BOT_TOKEN=...                      # from @BotFather; SAME token for the
                                             #   delivery step and the signup bot
 PYTHON_PATH=/Users/<you>/Desktop/briefcast/venv/bin/python3   # local only; omit on server
+PIPELINE_USER_ALLOWLIST=391345830           # OPTIONAL pre-launch cost guard — see below
 ```
+
+`PIPELINE_USER_ALLOWLIST` is a comma-separated list of `telegram_chat_id`s. When
+set, the pipeline serves **only** those accounts; unset/empty serves every active
+user, which is the real production behaviour. It exists because ElevenLabs' free
+tier is ~6 briefs/month and the bot marks every new signup `is_active=true`, so
+one stranger running `/start` can eat the month's quota. Stages 1 and 4 apply it
+(`src/pipeline/allowlist.js`); stages 5-6 inherit the scope automatically, since
+they only ever work off the briefs stage 4 created. **Clear it before launch.**
 
 ---
 
@@ -139,55 +151,110 @@ PYTHON_PATH=/Users/<you>/Desktop/briefcast/venv/bin/python3   # local only; omit
 # Activate Python venv first (local dev)
 source venv/bin/activate
 
-# Run the entire pipeline immediately (all 6 stages)
-RUN_NOW=true node src/cron.js
-
-# Or run the pipeline without the scheduler
-node src/pipeline/index.js
+# Run the entire pipeline immediately (all 6 stages) — the only Node entrypoint
+npm run pipeline          # node src/pipeline/index.js
 
 # Run a single stage standalone (for testing)
 node src/pipeline/generateScripts.js
 node src/pipeline/generateAudio.js
 node src/pipeline/deliverBriefs.js
 
-# Start the scheduler (production — waits for 3am IST)
-npm start
-
-# Start the Telegram signup bot (separate long-running process — run alongside npm start)
-npm run bot
+# The bot is a Supabase Edge Function, not a Node process
+npm run bot:serve         # local: npx supabase functions serve telegram-bot
+npm run bot:deploy        # ship it:  npx supabase functions deploy telegram-bot
 
 # Landing page (separate app, separate deploy — nothing to do with the pipeline)
 cd web && npm install && npm run dev     # http://localhost:3000
 cd web && npm run build                  # static export-able production build
-
-# Production (Railway) — ONE process that runs both the scheduler AND the bot
-npm run server        # node src/server.js
 ```
 
-npm scripts: `start` → `node src/cron.js`, `server` → `node src/server.js`
-(combined), `pipeline` → `node src/pipeline/index.js`, `dev` → `RUN_NOW=true
-node src/cron.js`, `bot` → `node src/bot/telegramBot.js`.
+npm scripts: `pipeline` → `node src/pipeline/index.js`, `bot:serve` /
+`bot:deploy` → the Supabase CLI for the Edge Function. There is no long-running
+Node process any more — nothing to `npm start`.
 
 ---
 
-## Deployment (Railway)
+## Deployment
 
-Deployed as a **single Railway service** built by Nixpacks. `src/server.js` is the
-combined entrypoint — it starts the cron scheduler and the Telegram bot in one
-process (the bot self-skips if `TELEGRAM_BOT_TOKEN` is unset).
+BriefCast's two halves have opposite needs, so they're hosted separately — and
+neither costs anything:
 
-Files:
-- `nixpacks.toml` — installs Node 20 + Python 3.12, `npm ci`, then pip-installs
-  `requirements.txt` into a venv at `/opt/venv`. Start cmd: `node src/server.js`.
-- `requirements.txt` — `pip freeze` of the local venv (yfinance + deps).
+| Half | Shape | Runs on |
+|------|-------|---------|
+| Nightly pipeline | ~10 min batch, once a day | **GitHub Actions** cron (`.github/workflows/pipeline.yml`) |
+| Telegram bot | reachable all day, tiny per-request work | **Supabase Edge Function** (`supabase/functions/telegram-bot`) |
 
-Railway setup:
-1. New project → Deploy from this repo. Nixpacks picks up `nixpacks.toml` automatically.
-2. Add all env vars from `.env.example` in the service **Variables** tab.
-   **Set `PYTHON_PATH=/opt/venv/bin/python3`** (the build installs Python deps there).
-3. Deploy. No exposed port is needed — this is a worker service, not a web server.
-4. Verify from **Logs**: you should see `[server] BriefCast is up …` and
-   `[bot] … running (long-polling)`. Message the bot `/start` to confirm inbound works.
+Nothing has to stay awake, so there is no cold start on a user's first `/start`,
+no keepalive ping, and no external cron service. There is **no application host
+and no long-running process** — the Node side is a batch job, nothing else.
+
+### Nightly pipeline — GitHub Actions
+
+`.github/workflows/pipeline.yml` runs `node src/pipeline/index.js` at
+`30 21 * * *` UTC (3:00am IST) on `ubuntu-latest`, with Node 22 + Python 3.12
+installed by the standard setup actions. `PYTHON_PATH` is deliberately unset so
+`fetchMarketData.js` falls back to the runner's system `python3`.
+
+Setup:
+1. Repo → **Settings → Secrets and variables → Actions** → add all seven:
+   `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SERPER_API_KEY`, `GEMINI_API_KEY`,
+   `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `TELEGRAM_BOT_TOKEN`.
+2. Optionally add a repo **variable** (Variables tab, not Secrets)
+   `PIPELINE_USER_ALLOWLIST` = your `telegram_chat_id`, to keep pre-launch runs
+   scoped to one account. Delete the variable to serve everyone.
+3. **Actions** tab → *Nightly pipeline* → **Run workflow** to test on demand.
+4. A failed run emails the repo owner; the run log is the pipeline log.
+
+Notes: the schedule only fires from the **default branch**. GitHub's cron is
+best-effort and can run 5-30 min late (harmless — briefs only need to exist by
+~6:30am IST). GitHub also disables schedules on a repo with no commits for 60
+days; any push re-arms it.
+
+### Telegram bot — Supabase Edge Function
+
+`supabase/functions/telegram-bot/index.ts` is a Deno/grammY port of
+`src/bot/telegramBot.js` — same commands, same identity model, same
+service_role client. It verifies Telegram's `x-telegram-bot-api-secret-token`
+header itself, which is why `supabase/config.toml` sets `verify_jwt = false`
+(Telegram sends its own header, not a Supabase JWT).
+
+Setup:
+```bash
+npx supabase login
+npx supabase link --project-ref <your-project-ref>
+
+# Secret must be 1-256 chars of A-Z a-z 0-9 _ - . Names can't start with SUPABASE_.
+npx supabase secrets set TELEGRAM_BOT_TOKEN=<token> \
+                         TELEGRAM_WEBHOOK_SECRET=$(openssl rand -hex 32)
+
+npx supabase functions deploy telegram-bot   # add --no-verify-jwt on older CLIs
+
+# Point Telegram at the function (do this LAST — it kicks any polling bot off).
+curl "https://api.telegram.org/bot<token>/setWebhook" \
+  -d "url=https://<project-ref>.supabase.co/functions/v1/telegram-bot" \
+  -d "secret_token=<the same secret>"
+```
+Verify with `curl https://api.telegram.org/bot<token>/getWebhookInfo` (check
+`pending_update_count` and `last_error_message`), then message the bot `/start`.
+Logs live in the Supabase dashboard under Edge Functions → telegram-bot.
+
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected into Edge Functions
+automatically — don't set them.
+
+### Previous hosts (removed)
+
+BriefCast previously ran as one always-on process (`src/server.js` — HTTP +
+node-cron + a telegraf bot) on **Railway**, then **Render**. Both are gone:
+Railway's free tier ran out, and Render has no free Background Worker, so it
+needed a sleeping web service propped up by an external cron, a webhook, and a
+`/healthz` self-ping. Splitting the app by duty cycle removed all of it.
+
+Deleted in that cleanup: `src/server.js`, `src/cron.js`, `src/bot/telegramBot.js`,
+`Dockerfile`, `.dockerignore`, `render.yaml`, `nixpacks.toml`, `railway.json`,
+and the `telegraf` / `node-cron` / `@anthropic-ai/sdk` dependencies. Recoverable
+from git history if a future feature ever needs a persistent process.
+
+The landing page in `web/` is a separate deploy (Vercel, or a static host).
 
 ---
 
@@ -202,11 +269,13 @@ Railway setup:
 - [x] Stage 5: audio generation (ElevenLabs → Supabase Storage)
 - [x] Stage 6: delivery (Telegram — bot sends the MP3, marks `delivered`)
 - [x] Orchestrator + cron scheduler
-- [x] Telegram signup bot (`src/bot/telegramBot.js`) — signup + watchlist over
+- [x] Telegram signup bot (`supabase/functions/telegram-bot/`) — signup + watchlist over
       chat (`/start`, `/add`, `/remove`, `/list`, `/language`, `/time`), replacing
       manual SQL inserts. This supersedes the Next.js signup web app for now.
-- [x] Deployment (Railway) — `nixpacks.toml` + `requirements.txt`; single service
-      via `src/server.js` (combined scheduler + bot). See "Deployment" section below.
+- [x] Deployment — **no hosting bill, no host at all**: the pipeline runs as a
+      GitHub Actions cron, the bot as a Supabase Edge Function. The old
+      always-on Railway/Render process and its deploy files were deleted.
+      See the "Deployment" section.
 - [x] Landing page (`web/`) — Next.js marketing site. Static, no auth, no database
       access; every CTA deep-links to the Telegram bot. See the **frontend** skill.
 
@@ -272,12 +341,33 @@ Railway setup:
    Supabase Storage URL and Telegram fetches it — so the `briefs-audio` bucket must
    be public (see gotcha 7). If the bucket is private, delivery fails.
 
-9. **The pipeline and the bot are two processes.** `npm start` runs the nightly
-   pipeline (outbound); `npm run bot` runs the signup bot (inbound). They share the
-   same `TELEGRAM_BOT_TOKEN` but are separate processes — the bot must stay running
-   to accept signups. Delivery self-skips (no abort) if the token is missing.
+9. **The pipeline and the bot are separate deploys in different runtimes.** The
+   pipeline is Node, on GitHub Actions (outbound); the bot is Deno, on Supabase
+   Edge Functions (inbound). They share only `TELEGRAM_BOT_TOKEN`, and each needs
+   it set in its OWN secret store — GitHub Actions secrets and
+   `supabase secrets set` respectively. Delivery self-skips (no abort) if the
+   token is missing, so a missing GitHub secret looks like a silent no-op.
 
-10. **ElevenLabs free tier rejects some shared "library" voices** with
+10. **The pipeline must exit non-zero on failure.** `runPipeline()` throws and
+    the direct-run branch of `pipeline/index.js` exits 1 — that is what fails the
+    GitHub Actions job and sends the failure email. A pipeline that swallowed its
+    own errors would go silently dead every night.
+
+11. **The Edge Function needs `verify_jwt = false`.** Telegram sends
+    `x-telegram-bot-api-secret-token`, not a Supabase JWT, so with verification
+    on, every webhook POST is rejected 401 and the bot goes silent with no error
+    anywhere except `getWebhookInfo`. Set in `supabase/config.toml`.
+
+12. **GitHub disables scheduled workflows after 60 days without a commit.** It
+    emails first. Any push re-arms it — worth knowing during a quiet stretch.
+
+13. **`PIPELINE_USER_ALLOWLIST` silently shrinks the run.** If it's set, only
+    those chat_ids get briefs and everyone else is skipped with no error — by
+    design, but it looks exactly like a bug. Both stages log a `⚠` line when it's
+    active; check that first if users mysteriously stop receiving briefs. It must
+    be cleared (locally AND in the GitHub repo variable) before launch.
+
+14. **ElevenLabs free tier rejects some shared "library" voices** with
     `402 paid_plan_required` (including defaults like Rachel/George/Brian/Lily). The
     default voice is now "Sarah" (`EXAVITQu4vr4xnSDxMaL`); override via
     `ELEVENLABS_VOICE_ID` if you hit a 402.
@@ -292,6 +382,7 @@ Railway setup:
 - **Serper** — free tier: 2,500 searches/month. At ~400 tickers/night that's
   ~12,000/month, so this will need a paid plan or caching once live.
 - **ElevenLabs** — free tier: ~10,000 chars/month (~6 full briefs). This is the
-  main paid dependency. Consider `eleven_turbo_v2_5` model or alternative TTS
+  main paid dependency, and the reason `PIPELINE_USER_ALLOWLIST` exists: scoped to
+  one account a nightly run costs ~1,200 chars (~8 runs/month) instead of ~3,600. Consider `eleven_turbo_v2_5` model or alternative TTS
   (Google Cloud TTS) to cut cost at scale.
 - **yfinance / Supabase** — free.

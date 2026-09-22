@@ -80,12 +80,15 @@ export async function runPipeline() {
     console.log(`[pipeline] Briefs ready for delivery\n`)
 
   } catch (err) {
+    // Throw rather than process.exit so callers decide what a failure means.
+    // The direct-run branch below exits 1, which is what fails the GitHub
+    // Actions job and triggers the failure email.
     console.error(`\n[pipeline] ❌ Pipeline aborted: ${err.message}`)
-    process.exit(1)
+    throw err
   }
 }
 
 // Allow running directly: node src/pipeline/index.js
 if (process.argv[1].includes('pipeline/index')) {
-  runPipeline()
+  runPipeline().catch(() => process.exit(1))
 }

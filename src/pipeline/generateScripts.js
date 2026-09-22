@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import { GoogleGenAI } from '@google/genai'
 import supabase from '../supabaseClient.js'
+import { allowedChatIds, logAllowlist } from './allowlist.js'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
@@ -16,10 +17,16 @@ const CONCURRENCY = 3
 // 1. Fetch all active users with their watchlists
 // ─────────────────────────────────────────────
 async function getActiveUsersWithWatchlists() {
-  const { data, error } = await supabase
+  let query = supabase
     .from('profiles')
     .select('id, name, language, watchlists(ticker)')
     .eq('is_active', true)
+
+  const allow = allowedChatIds()
+  logAllowlist('generateScripts', allow)
+  if (allow) query = query.in('telegram_chat_id', allow)
+
+  const { data, error } = await query
 
   if (error) throw new Error(`getActiveUsers failed: ${error.message}`)
 

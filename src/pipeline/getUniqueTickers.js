@@ -1,4 +1,5 @@
 import supabase from '../supabaseClient.js'
+import { allowedChatIds, logAllowlist } from './allowlist.js'
 
 // Returns array of unique NSE ticker strings across ALL active users
 // e.g. ['RELIANCE', 'INFY', 'HDFCBANK', 'TCS', ...]
@@ -9,16 +10,18 @@ import supabase from '../supabaseClient.js'
 
 export async function getUniqueTickers() {
 
-  const { data, error } = await supabase
+  // !inner makes this a real join, so the profiles.* filters below actually
+  // exclude rows rather than just nulling the embedded object.
+  let query = supabase
     .from('watchlists')
-    .select('ticker, profiles!inner(is_active)')
+    .select('ticker, profiles!inner(is_active, telegram_chat_id)')
     .eq('profiles.is_active', true)
 
-  // Join watchlists with profiles to only include active users
-  // const { data, error } = await supabase
-  //   .from('watchlists')
-  //   .select('ticker, profiles!inner(is_active)')
-  //   .eq('profiles.is_active', true)
+  const allow = allowedChatIds()
+  logAllowlist('getUniqueTickers', allow)
+  if (allow) query = query.in('profiles.telegram_chat_id', allow)
+
+  const { data, error } = await query
 
   if (error) throw new Error(`getUniqueTickers failed: ${error.message}`)
   if (!data || data.length === 0) return []
