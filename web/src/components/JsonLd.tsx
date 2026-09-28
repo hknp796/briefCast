@@ -1,4 +1,4 @@
-import { site, plans } from "@/lib/site";
+import { site, plans, faqs } from "@/lib/site";
 
 export default function JsonLd() {
   const structuredData = {
@@ -11,7 +11,9 @@ export default function JsonLd() {
         url: site.url,
         description: site.description,
         applicationCategory: "FinanceApplication",
+        applicationSubCategory: "AI Market Agent / Audio Brief",
         operatingSystem: "All",
+        isAccessibleForFree: true,
         offers: plans.map((plan) => ({
           "@type": "Offer",
           name: plan.name,
@@ -21,10 +23,24 @@ export default function JsonLd() {
         })),
         featureList: [
           "Personalised 3-minute morning audio brief",
+          "Autonomous AI market briefing agent",
           "NSE & Indian stock market watchlist tracking",
           "Delivered over Telegram before 9:15 AM IST open",
           "AI-synthesised price moves and overnight news",
+          "English and Hinglish spoken market briefs",
         ],
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${site.url}/#faq`,
+        mainEntity: faqs.map((f) => ({
+          "@type": "Question",
+          name: f.q,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: f.a,
+          },
+        })),
       },
       {
         "@type": "Organization",

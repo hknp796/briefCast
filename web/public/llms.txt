@@ -1,0 +1,36 @@
+# BriefCast
+
+> AI-powered personalised morning audio market briefings for Indian stock traders.
+
+BriefCast is an autonomous AI financial market agent designed specifically for Indian retail traders and investors. Every trading day before the National Stock Exchange (NSE) opens at 9:15 AM IST, BriefCast monitors each user's personal stock watchlist, synthesizes overnight price movements and verified corporate news with an LLM, and converts that brief into a personalized ~3-minute spoken audio podcast delivered directly via Telegram.
+
+## Core Capabilities
+- **Personalized Watchlist Briefing**: Users track their own selected NSE tickers (e.g. INFY, TATAMOTORS, RELIANCE). The briefing covers specifically the stocks they own or monitor.
+- **Overnight & Pre-Market Synthesis**: Analyzes overnight price moves, gap up/down percentages, and overnight corporate announcements before the opening bell.
+- **Spoken Audio Delivery**: Converts personalized market intelligence into natural, concise audio (~3 minutes) using generative voice synthesis.
+- **Telegram Native**: No web dashboard or separate app install required; users configure watchlists, listen to audio briefs, and manage preferences entirely within Telegram (@briefcast_market_bot).
+- **Language Options**: English and Hinglish (Hindi + English) audio briefings.
+- **Scheduled Pre-Market Delivery**: Default delivery is at 8:00 AM IST, with custom delivery times available for active traders.
+
+## Target Audience
+- Indian retail stock traders (NSE / BSE).
+- Morning commuters and working professionals who need concise market context without staring at charts or reading dozens of disparate news articles.
+- Swing and intraday traders wanting overnight context on their watchlists before 9:15 AM IST.
+
+## Architecture & Technology
+- **Pipeline Orchestration**: Scheduled batch processing via GitHub Actions and Node.js.
+- **AI Synthesis**: Google Gemini LLM for financial news extraction and script generation.
+- **Speech Synthesis**: ElevenLabs neural voice models.
+- **Database & Auth**: Supabase (PostgreSQL with Row Level Security).
+- **Market Data Feeds**: NSE price feeds and Serper news aggregation.
+
+## Pricing & Plans
+- **Free**: Up to 5 stocks, daily morning brief, English, delivered at 8:00 AM IST. Free forever.
+- **Pro (₹199 / month)**: Up to 20 stocks, English or Hinglish, custom delivery time (e.g., 7:00 AM IST), deeper news coverage.
+- **Trader (₹499 / month)**: Up to 50 stocks, priority delivery, sector and benchmark index context.
+
+## Official Links & Resources
+- Website: https://briefcast.in
+- Telegram Bot: https://t.me/briefcast_market_bot (@briefcast_market_bot)
+- Pricing Details: https://briefcast.in/#pricing
+- FAQ: https://briefcast.in/#faq

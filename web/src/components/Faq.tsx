@@ -1,31 +1,4 @@
-import { BOT_USERNAME } from "@/lib/site";
-
-const faqs = [
-  {
-    q: "Do I need to install anything?",
-    a: "No. If you already have Telegram, that's the whole stack. BriefCast is a bot inside it — there's no BriefCast app, no website to log into, and no password to remember.",
-  },
-  {
-    q: "Which stocks can I add?",
-    a: "Anything listed on the NSE. Add the plain symbol without the .NS suffix — /add INFY, /add TATAMOTORS, /add M&M. If a symbol isn't recognised the bot tells you straight away.",
-  },
-  {
-    q: "What time does it arrive?",
-    a: "Before the 9:15am open, every trading day. The default is 8:00am IST and paid plans can set their own time with /time 07:00.",
-  },
-  {
-    q: "Where does the information come from?",
-    a: "Overnight and previous-session price data comes from public market data feeds. The context around each move comes from published news coverage on that stock, gathered fresh each night.",
-  },
-  {
-    q: "Is this financial advice?",
-    a: "No, and it's deliberately built not to be. BriefCast reports what moved and flags one thing worth watching. It will never tell you to buy, sell or hold, and it isn't a registered investment adviser. Every decision is yours.",
-  },
-  {
-    q: "How do I stop?",
-    a: "Message the bot and stop. There's no billing to unwind on the free plan, and paid plans cancel from the same chat. You can clear your watchlist any time with /remove.",
-  },
-];
+import { BOT_USERNAME, faqs } from "@/lib/site";
 
 export default function Faq() {
   return (

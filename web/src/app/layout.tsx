@@ -25,6 +25,7 @@ export const metadata: Metadata = {
   keywords: [
     "market brief", "NSE", "Indian stock market", "audio brief",
     "retail traders", "watchlist", "pre-market", "Telegram",
+    "AI agent", "stock market AI", "financial AI agent", "AI market brief",
   ],
   manifest: "/site.webmanifest",
   openGraph: {
