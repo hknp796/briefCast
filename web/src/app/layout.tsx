@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import { site } from "@/lib/site";
+import JsonLd from "@/components/JsonLd";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -51,7 +52,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en-IN"
       className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-ink text-bright">{children}</body>
+      <body className="min-h-full flex flex-col bg-ink text-bright">
+        <JsonLd />
+        {children}
+      </body>
     </html>
   );
 }
