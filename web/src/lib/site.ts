@@ -9,9 +9,10 @@ export const BOT_URL = `https://t.me/${BOT_USERNAME}`;
 
 export const site = {
   name: "BriefCast",
+  title: "BriefCast — Pre-Market Audio Brief for NSE Traders",
   tagline: "Your watchlist, read to you before the market opens.",
   description:
-    "A personalised three-minute audio market brief for Indian retail traders. Overnight moves on the stocks you actually own, delivered on Telegram before the NSE opens at 9:15am.",
+    "Personalised 3-minute audio market brief for Indian retail traders. Overnight moves on your watchlist delivered on Telegram before the NSE opens.",
   url: "https://briefcast.in",
 } as const;
 
@@ -79,24 +80,32 @@ export const faqs = [
     a: "No. If you already have Telegram, that's the whole stack. BriefCast is a bot inside it — there's no BriefCast app, no website to log into, and no password to remember.",
   },
   {
-    q: "Which stocks can I add?",
-    a: "Anything listed on the NSE. Add the plain symbol without the .NS suffix — /add INFY, /add TATAMOTORS, /add M&M. If a symbol isn't recognised the bot tells you straight away.",
+    q: "Which stocks can I add to my watchlist?",
+    a: "You can track any equity security listed on the National Stock Exchange of India (NSE), including Largecap, Midcap, and Smallcap stocks. Simply add the symbol without the .NS suffix—like /add INFY, /add TATAMOTORS, or /add RELIANCE. The bot confirms valid symbols instantly against official NSE listings.",
   },
   {
-    q: "What time does it arrive?",
-    a: "Before the 9:15am open, every trading day. The default is 8:00am IST and paid plans can set their own time with /time 07:00.",
+    q: "What time does the market brief arrive?",
+    a: "Every trading day before the 9:15am IST opening bell. The default delivery time is 8:00am IST, giving you plenty of time before the 9:00am pre-open session. Pro and Trader subscribers can customize their delivery time to match their morning schedule using /time.",
   },
   {
-    q: "Where does the information come from?",
-    a: "Overnight and previous-session price data comes from public market data feeds. The context around each move comes from published news coverage on that stock, gathered fresh each night.",
+    q: "Where does the market data and news come from?",
+    a: "Overnight and previous-session price action is sourced from verified public market data feeds. Contextual news, quarterly earnings, regulatory disclosures, and corporate filings are gathered fresh each night from trusted financial publications to explain the root driver behind each stock's move.",
+  },
+  {
+    q: "How is BriefCast different from stock tip channels or advisory bots?",
+    a: "BriefCast is an objective, automated market intelligence tool, not an advisory service or tip channel. We never issue buy, sell, or hold recommendations, nor do we promote speculative trades. Our AI agent simply summarizes verified overnight news and price action for your specific watchlist so you make informed decisions yourself.",
+  },
+  {
+    q: "Can I get my briefing in Hinglish?",
+    a: "Yes. BriefCast offers full support for both English and natural Hinglish audio briefings. In Hinglish mode, stock names, price levels, and financial figures remain in English, while the narrative commentary is delivered in conversational Hindi. You can switch anytime using the /language command.",
   },
   {
     q: "Is this financial advice?",
-    a: "No, and it's deliberately built not to be. BriefCast reports what moved and flags one thing worth watching. It will never tell you to buy, sell or hold, and it isn't a registered investment adviser. Every decision is yours.",
+    a: "No, and it is deliberately built not to be. BriefCast reports what moved and flags key levels or context worth watching. It will never tell you to buy, sell, or hold, and it is not a SEBI-registered investment adviser or research analyst. Every trading decision remains entirely yours.",
   },
   {
-    q: "How do I stop?",
-    a: "Message the bot and stop. There's no billing to unwind on the free plan, and paid plans cancel from the same chat. You can clear your watchlist any time with /remove.",
+    q: "How do I stop or change my watchlist?",
+    a: "Message the bot inside Telegram. There is no billing or credit card to unwind on the free plan, and paid subscriptions can be paused or cancelled directly from the chat. You can add, edit, or remove stocks from your watchlist anytime with /add, /remove, and /list.",
   },
 ] as const;
 

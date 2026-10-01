@@ -3,6 +3,7 @@ import TelegramButton from "./TelegramButton";
 import { site } from "@/lib/site";
 
 const links = [
+  { href: "#why", label: "Why BriefCast" },
   { href: "#how", label: "How it works" },
   { href: "#sample", label: "Sample brief" },
   { href: "#pricing", label: "Pricing" },

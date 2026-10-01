@@ -20,6 +20,7 @@ export default function Footer() {
           </div>
 
           <nav className="flex flex-wrap gap-x-8 gap-y-3 text-[0.88rem]">
+            <Link href="#why" className="text-muted transition-colors hover:text-bright">Why BriefCast</Link>
             <Link href="#how" className="text-muted transition-colors hover:text-bright">How it works</Link>
             <Link href="#sample" className="text-muted transition-colors hover:text-bright">Sample brief</Link>
             <Link href="#pricing" className="text-muted transition-colors hover:text-bright">Pricing</Link>

@@ -3,9 +3,8 @@
 // before the open. Deterministic bar heights — no Math.random, so SSR and the
 // client render identically.
 const BARS = [
-  0.35, 0.62, 0.44, 0.85, 0.55, 0.95, 0.7, 0.4, 0.78, 0.52, 0.88, 0.33,
-  0.66, 0.92, 0.48, 0.74, 0.38, 0.6, 0.83, 0.45, 0.7, 0.55, 0.4, 0.65,
-  0.9, 0.5, 0.36, 0.72, 0.58, 0.42,
+  0.35, 0.62, 0.44, 0.85, 0.55, 0.95, 0.7, 0.4, 0.78, 0.52, 0.88, 0.66,
+  0.92, 0.48, 0.74, 0.6, 0.83, 0.45,
 ];
 
 export default function ChatMock() {
@@ -51,7 +50,7 @@ export default function ChatMock() {
             </div>
 
             {/* Waveform */}
-            <div className="mt-3 flex h-8 items-center gap-[3px]">
+            <div aria-hidden="true" className="mt-3 flex h-8 items-center gap-[3px]">
               {BARS.map((h, i) => (
                 <span
                   key={i}

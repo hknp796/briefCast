@@ -10,8 +10,8 @@ const WATCHLIST = [
   { ticker: "TATAMOTORS", gap: -0.2 },
 ];
 
-// 80 bars, deterministic (no Math.random) so SSR and client agree.
-const BARS = Array.from({ length: 80 }, (_, i) =>
+// 36 bars, deterministic (no Math.random) so SSR and client agree.
+const BARS = Array.from({ length: 36 }, (_, i) =>
   0.3 + 0.34 * Math.abs(Math.sin(i * 0.7)) + 0.3 * Math.abs(Math.sin(i * 0.23 + 1.1))
 );
 
@@ -58,11 +58,11 @@ export default function SampleBrief() {
                 <path d="M8 5.14v13.72a1 1 0 0 0 1.54.84l10.3-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14z" />
               </svg>
             </span>
-            <div className="flex h-9 flex-1 items-center justify-between">
+            <div aria-hidden="true" className="flex h-9 flex-1 items-center justify-between gap-1">
               {BARS.map((h, i) => (
                 <span
                   key={i}
-                  className="wave-bar w-[2px] shrink-0 rounded-full bg-dawn/50"
+                  className="wave-bar w-[3px] shrink-0 rounded-full bg-dawn/50"
                   style={{ height: `${Math.round(h * 100)}%`, animationDelay: `${(i % 12) * 0.1}s` }}
                 />
               ))}
