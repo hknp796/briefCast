@@ -1,0 +1,114 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
+import { site, BOT_URL, BOT_USERNAME } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: "Contact & Support — BriefCast",
+  description:
+    "Get in touch with the BriefCast team. Reach out via Telegram or email for support, questions, data corrections, or partnership inquiries.",
+  alternates: {
+    canonical: "/contact",
+  },
+};
+
+export default function ContactPage() {
+  return (
+    <>
+      <Nav />
+      <main className="mx-auto max-w-4xl px-5 py-16 sm:px-8 sm:py-24">
+        {/* Breadcrumb & Meta */}
+        <div className="flex items-center gap-2 text-xs font-mono text-faint">
+          <Link href="/" className="hover:text-bright transition-colors">Home</Link>
+          <span>/</span>
+          <span className="text-dawn">Contact</span>
+        </div>
+
+        {/* Title */}
+        <h1 className="mt-6 font-serif text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
+          Get in touch with us.
+        </h1>
+        <p className="mt-4 text-[0.95rem] text-muted">
+          Whether you need help with your watchlist, spotted an issue with a market brief, or want to explore an integration, we are here to help.
+        </p>
+        <p className="mt-2 text-xs font-mono text-faint">
+          Last updated: October 2026 · Typical response time: Within 24 hours
+        </p>
+
+        {/* Contact Cards Grid */}
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2">
+          {/* Card 1: Telegram */}
+          <div className="rounded-xl border border-line-soft bg-surface/50 p-6 flex flex-col justify-between">
+            <div>
+              <span className="text-xs font-mono uppercase tracking-wider text-dawn">Direct & Fastest</span>
+              <h3 className="mt-2 font-serif text-xl text-bright">Telegram Support</h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                Message the bot directly on Telegram for real-time commands like <code className="text-bright">/help</code>, <code className="text-bright">/time</code>, or to manage your stocks.
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-line-soft">
+              <a
+                href={BOT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-medium text-dawn hover:text-dawn-soft transition-colors"
+              >
+                <span>Chat @{BOT_USERNAME}</span>
+                <span>→</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Card 2: Email */}
+          <div className="rounded-xl border border-line-soft bg-surface/50 p-6 flex flex-col justify-between">
+            <div>
+              <span className="text-xs font-mono uppercase tracking-wider text-dawn">Official Inquiries</span>
+              <h3 className="mt-2 font-serif text-xl text-bright">Email Support</h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                For detailed queries, billing assistance, technical feedback, or corporate inquiries, write directly to our founder and engineering team.
+              </p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-line-soft">
+              <a
+                href={`mailto:${site.email}`}
+                className="inline-flex items-center gap-2 text-sm font-medium text-dawn hover:text-dawn-soft transition-colors"
+              >
+                <span>{site.email}</span>
+                <span>→</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Operating Address & Physical Location */}
+        <div className="mt-12 rounded-xl border border-line-soft bg-surface/30 p-8">
+          <span className="text-xs font-mono uppercase tracking-wider text-dawn">Physical Location & Jurisdiction</span>
+          <h2 className="mt-2 font-serif text-2xl text-bright">Operating Headquarters</h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted max-w-xl">
+            BriefCast is developed, maintained, and operated out of Calicut, Kerala, India.
+          </p>
+          <div className="mt-6 flex flex-col gap-2 font-mono text-sm text-faint border-l-2 border-dawn pl-4">
+            <p className="text-bright font-medium">{site.name}</p>
+            <p>Attn: {site.author.name}</p>
+            <p>Calicut (Kozhikode), Kerala 673001</p>
+            <p>India</p>
+          </div>
+        </div>
+
+        {/* Grievance & Corrections Policy */}
+        <div className="mt-12 border-t border-line-soft pt-10 text-sm text-muted">
+          <h3 className="text-base font-semibold text-bright">Data Discrepancies & Grievances</h3>
+          <p className="mt-2 leading-relaxed">
+            If you identify any discrepancy in overnight market numbers or news attributions generated by the AI pipeline, please notify us immediately at{" "}
+            <a href={`mailto:${site.email}`} className="text-bright underline hover:text-dawn">
+              {site.email}
+            </a>{" "}
+            with the date and ticker symbol. We review and correct data model inputs promptly.
+          </p>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}

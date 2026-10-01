@@ -14,6 +14,13 @@ export const site = {
   description:
     "Personalised 3-minute audio market brief for Indian retail traders. Overnight moves on your watchlist delivered on Telegram before the NSE opens.",
   url: "https://briefcast.in",
+  email: "contact@briefcast.in",
+  location: "Calicut, Kerala, India",
+  author: {
+    name: "Hari",
+    role: "Founder & Software Engineer",
+    bio: "Software engineer and quantitative finance enthusiast based in Calicut, Kerala. Building autonomous AI tools that provide Indian retail traders with objective pre-market intelligence.",
+  },
 } as const;
 
 // ─────────────────────────────────────────────
