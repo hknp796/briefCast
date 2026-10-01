@@ -1,3 +1,5 @@
+"use client";
+
 import { BOT_USERNAME, faqs } from "@/lib/site";
 
 export default function Faq() {

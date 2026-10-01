@@ -1,3 +1,5 @@
+"use client";
+
 import { site, plans, faqs } from "@/lib/site";
 
 export default function JsonLd() {

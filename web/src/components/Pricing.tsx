@@ -1,3 +1,5 @@
+"use client";
+
 import { plans } from "@/lib/site";
 import TelegramButton from "./TelegramButton";
 

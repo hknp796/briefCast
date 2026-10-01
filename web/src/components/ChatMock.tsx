@@ -1,3 +1,5 @@
+"use client";
+
 // A faithful mock of what deliverBriefs.js actually sends: an audio message
 // titled "BriefCast — Market Brief" with the good-morning caption, arriving
 // before the open. Deterministic bar heights — no Math.random, so SSR and the

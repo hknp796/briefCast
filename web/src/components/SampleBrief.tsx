@@ -2,6 +2,8 @@
 // prompt in generateScripts.js enforces: 250-320 words, spoken numbers, no
 // markdown, one "thing to watch", never a buy/sell call, closing disclaimer.
 
+import Waveform from "@/components/Waveform";
+
 const WATCHLIST = [
   { ticker: "RELIANCE", gap: 1.2 },
   { ticker: "INFY", gap: -0.8 },
@@ -9,11 +11,6 @@ const WATCHLIST = [
   { ticker: "HDFCBANK", gap: 0.0 },
   { ticker: "TATAMOTORS", gap: -0.2 },
 ];
-
-// 36 bars, deterministic (no Math.random) so SSR and client agree.
-const BARS = Array.from({ length: 36 }, (_, i) =>
-  0.3 + 0.34 * Math.abs(Math.sin(i * 0.7)) + 0.3 * Math.abs(Math.sin(i * 0.23 + 1.1))
-);
 
 function fmt(gap: number) {
   const sign = gap > 0 ? "+" : gap < 0 ? "" : "±";
@@ -58,15 +55,7 @@ export default function SampleBrief() {
                 <path d="M8 5.14v13.72a1 1 0 0 0 1.54.84l10.3-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14z" />
               </svg>
             </span>
-            <div aria-hidden="true" className="flex h-9 flex-1 items-center justify-between gap-1">
-              {BARS.map((h, i) => (
-                <span
-                  key={i}
-                  className="wave-bar w-[3px] shrink-0 rounded-full bg-dawn/50"
-                  style={{ height: `${Math.round(h * 100)}%`, animationDelay: `${(i % 12) * 0.1}s` }}
-                />
-              ))}
-            </div>
+            <Waveform />
             <span className="shrink-0 font-mono text-[0.75rem] text-faint">2:47</span>
           </div>
 
