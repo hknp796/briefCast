@@ -8,7 +8,8 @@
   "scripts": {
     "pipeline": "node src/pipeline/index.js",
     "bot:serve": "npx supabase functions serve telegram-bot",
-    "bot:deploy": "npx supabase functions deploy telegram-bot"
+    "bot:deploy": "npx supabase functions deploy telegram-bot --use-api",
+    "deliver:deploy": "npx supabase functions deploy deliver-briefs --use-api"
   },
   "dependencies": {
     "@elevenlabs/elevenlabs-js": "^2.52.0",

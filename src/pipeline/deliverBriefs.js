@@ -23,21 +23,40 @@ const API_BASE = 'https://api.telegram.org'
 // well clear and respect Supabase Storage serving the audio URLs.
 const CONCURRENCY = 5
 
+// Current wall-clock time in IST as 'HH:MM' — same format as profiles.brief_time,
+// so the two compare correctly as plain strings.
+function nowIST() {
+  return new Date(Date.now() + 5.5 * 60 * 60 * 1000).toISOString().slice(11, 16)
+}
+
 // ─────────────────────────────────────────────
-// 1. Fetch today's ready, not-yet-delivered briefs with the recipient's chat_id.
+// 1. Fetch ready, not-yet-delivered briefs whose owner's brief_time has passed.
 // `delivered=false` makes re-runs idempotent — already-sent briefs are skipped.
 // briefs.user_id is an FK to profiles, so the nested select pulls chat_id + name.
+//
+// The window is yesterday-or-later (UTC), not just today: the 3am IST run is
+// 21:30 UTC, so its briefs are stamped with the PREVIOUS UTC date. A delivery
+// run at, say, 07:00 IST (01:30 UTC) must still find them.
 // ─────────────────────────────────────────────
-async function getDeliverableBriefs(date) {
+async function getDeliverableBriefs(sinceDate, now) {
   const { data, error } = await supabase
     .from('briefs')
-    .select('user_id, date, audio_url, profiles(telegram_chat_id, name)')
-    .eq('date', date)
+    .select('user_id, date, audio_url, profiles(telegram_chat_id, name, brief_time)')
+    .gte('date', sinceDate)
     .eq('status', 'ready')
     .eq('delivered', false)
+    .order('date', { ascending: false })
 
   if (error) throw new Error(`getDeliverableBriefs failed: ${error.message}`)
-  return data || []
+
+  // Only the newest brief per user (never send yesterday's stale one too),
+  // and only once their chosen time has arrived.
+  const seen = new Set()
+  return (data || []).filter((b) => {
+    if (seen.has(b.user_id)) return false
+    seen.add(b.user_id)
+    return (b.profiles?.brief_time || '07:00') <= now
+  })
 }
 
 // ─────────────────────────────────────────────
@@ -68,16 +87,21 @@ async function sendTelegramAudio(chatId, name, audioUrl) {
 }
 
 // ─────────────────────────────────────────────
-// 3. Mark a brief delivered so re-runs don't re-send it
+// 3. Claim a brief before sending it. The nightly pipeline and the per-minute
+// deliver-briefs Edge Function can overlap, so mark delivered=true only if it is still
+// false — whichever run wins the claim sends; the other gets 0 rows and skips.
 // ─────────────────────────────────────────────
-async function markDelivered(userId, date) {
-  const { error } = await supabase
+async function setDelivered(userId, date, delivered) {
+  let query = supabase
     .from('briefs')
-    .update({ delivered: true })
+    .update({ delivered })
     .eq('user_id', userId)
     .eq('date', date)
+  if (delivered) query = query.eq('delivered', false)
 
-  if (error) throw new Error(`markDelivered failed: ${error.message}`)
+  const { data, error } = await query.select('user_id')
+  if (error) throw new Error(`setDelivered failed: ${error.message}`)
+  return (data || []).length > 0
 }
 
 // ─────────────────────────────────────────────
@@ -97,8 +121,14 @@ async function processBrief(brief) {
     return { ok: false }
   }
 
-  await sendTelegramAudio(chatId, name, audio_url)
-  await markDelivered(user_id, date)
+  if (!(await setDelivered(user_id, date, true))) return { ok: true }  // another run sent it
+
+  try {
+    await sendTelegramAudio(chatId, name, audio_url)
+  } catch (err) {
+    await setDelivered(user_id, date, false)   // release the claim so the next run retries
+    throw err
+  }
 
   console.log(`[deliverBriefs] ✓ ${name} (${user_id.slice(0, 8)}) — sent to chat ${chatId}`)
   return { ok: true }
@@ -141,10 +171,11 @@ export async function deliverBriefs() {
     return { skipped: true, success: 0, failed: 0 }
   }
 
-  const date = new Date().toISOString().split('T')[0]
-  const briefs = await getDeliverableBriefs(date)
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const now = nowIST()
+  const briefs = await getDeliverableBriefs(since, now)
 
-  console.log(`[deliverBriefs] Delivering ${briefs.length} ready briefs`)
+  console.log(`[deliverBriefs] ${now} IST — delivering ${briefs.length} briefs due by now`)
 
   if (briefs.length === 0) return { success: 0, failed: 0 }
 

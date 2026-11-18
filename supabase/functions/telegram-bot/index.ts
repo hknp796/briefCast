@@ -217,7 +217,7 @@ bot.command('time', async (ctx) => {
   const { error } = await supabase.from('profiles').update({ brief_time: time }).eq('id', profile.id)
   if (error) throw new Error(`time update failed: ${error.message}`)
 
-  await ctx.reply(`⏰ Delivery time set to ${time} IST.`)
+  await ctx.reply(`⏰ Delivery time set to ${time} IST. Your brief arrives within a minute or two of that.`)
 })
 
 // Catch errors per-update so one bad message doesn't fail the whole invocation.

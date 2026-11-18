@@ -55,10 +55,13 @@ briefcast/
 │   └── pipeline.yml          # nightly pipeline cron (3am IST) — the batch host
 ├── supabase/
 │   ├── schema.sql            # all 5 tables + RLS policies
+│   ├── cron.sql              # pg_cron job: call deliver-briefs every minute
 │   ├── config.toml           # Supabase CLI config (verify_jwt off for the bot)
 │   └── functions/
-│       └── telegram-bot/
-│           └── index.ts      # the signup/watchlist bot (Deno + grammy)
+│       ├── telegram-bot/
+│       │   └── index.ts      # the signup/watchlist bot (Deno + grammy)
+│       └── deliver-briefs/
+│           └── index.ts      # per-minute delivery at each user's brief_time
 ├── web/                      # Next.js marketing site (landing page) — see below
 │   ├── next.config.ts
 │   └── src/
@@ -241,6 +244,20 @@ Logs live in the Supabase dashboard under Edge Functions → telegram-bot.
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected into Edge Functions
 automatically — don't set them.
 
+### Per-user delivery — pg_cron → Edge Function
+
+`supabase/functions/deliver-briefs` sends every ready brief whose owner's
+`brief_time` has passed. `pg_cron` calls it every minute via `pg_net`, with an
+`x-cron-secret` header (so `verify_jwt = false` in `config.toml`).
+
+```bash
+npx supabase secrets set DELIVER_CRON_SECRET=$(openssl rand -hex 32)   # TELEGRAM_BOT_TOKEN already set for the bot
+npm run deliver:deploy        # npx supabase functions deploy deliver-briefs
+```
+Then open `supabase/cron.sql`, fill in `<project-ref>` and the same secret, and
+run it once in the SQL editor. Check it with `cron.job_run_details` and
+`net._http_response` (queries are at the bottom of the file).
+
 ### Previous hosts (removed)
 
 BriefCast previously ran as one always-on process (`src/server.js` — HTTP +
@@ -276,6 +293,10 @@ The landing page in `web/` is a separate deploy (Vercel, or a static host).
       GitHub Actions cron, the bot as a Supabase Edge Function. The old
       always-on Railway/Render process and its deploy files were deleted.
       See the "Deployment" section.
+- [x] Per-user `brief_time` — Supabase `pg_cron` (`supabase/cron.sql`) calls the
+      `deliver-briefs` Edge Function every minute; it sends each ready brief once its
+      owner's `/time` has passed (within ~1 min). Briefs are still generated once,
+      at 3am IST, and pipeline stage 6 still delivers anyone already due.
 - [x] Landing page (`web/`) — Next.js marketing site. Static, no auth, no database
       access; every CTA deep-links to the Telegram bot. See the **frontend** skill.
 
@@ -290,10 +311,7 @@ The landing page in `web/` is a separate deploy (Vercel, or a static host).
       flow — e.g. `t.me/briefcast_market_bot?start=<nonce>`, with the bot reading the
       nonce from the `/start` payload. Decide this BEFORE building web auth, or you
       get two `auth.users` rows per human and delivery breaks.
-- [ ] **Per-user brief_time delivery** — the pipeline runs once at 3am and delivers
-      to everyone in one pass; `profiles.brief_time` is collected by the bot but not
-      yet honoured for scheduling.
-**Suggested next step:** Razorpay payments, or honouring per-user `brief_time`.
+**Suggested next step:** Razorpay payments.
 
 ---
 
@@ -371,6 +389,18 @@ The landing page in `web/` is a separate deploy (Vercel, or a static host).
     `402 paid_plan_required` (including defaults like Rachel/George/Brian/Lily). The
     default voice is now "Sarah" (`EXAVITQu4vr4xnSDxMaL`); override via
     `ELEVENLABS_VOICE_ID` if you hit a 402.
+
+15. **The 3am IST run stamps briefs with the PREVIOUS UTC date** (it's 21:30 UTC).
+    `deliverBriefs.js` therefore looks back to yesterday (UTC), not just today, and
+    sends only the newest undelivered brief per user. It claims a brief
+    (`delivered` false → true) before sending, so the pipeline and the
+    `deliver-briefs` Edge Function can overlap without double-sending. The Edge
+    Function duplicates `deliverBriefs.js` (Deno vs Node) — change both together.
+
+16. **`deliver-briefs` needs `DELIVER_CRON_SECRET` in TWO places:** `supabase
+    secrets set` (the function checks it) and Vault via `supabase/cron.sql` (pg_cron
+    sends it). If they differ, every call 401s and nobody gets a brief — check
+    `net._http_response` for status codes.
 
 ---
 

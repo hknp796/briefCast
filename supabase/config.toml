@@ -8,3 +8,8 @@ project_id = "briefcast"
 # verification must be off or every webhook POST is rejected with 401.
 # The function checks x-telegram-bot-api-secret-token itself instead.
 verify_jwt = false
+
+[functions.deliver-briefs]
+# Called every minute by pg_cron (supabase/cron.sql), which sends an
+# x-cron-secret header rather than a Supabase JWT. The function checks it.
+verify_jwt = false
