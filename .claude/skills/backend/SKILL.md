@@ -1,6 +1,6 @@
 ---
 name: backend
-description: Use when working on BriefCast backend code — the Node.js nightly pipeline, its stages, the cron scheduler, API integrations (yfinance, Serper, Gemini, ElevenLabs), or running/debugging the pipeline locally.
+description: Use when working on BriefCast backend code — the Node.js nightly pipeline, its stages, the cron scheduler, API integrations (yfinance, Serper, Gemini scripts + TTS), or running/debugging the pipeline locally.
 ---
 
 # BriefCast backend
@@ -10,7 +10,7 @@ scheduler. There is no web server — it's a batch job that runs at 3am IST.
 
 **Stack:** Node 20+ (`"type": "module"`), Supabase JS client, Python 3 +
 `yfinance` (called via `child_process`), Serper (news), Google Gemini 2.5 Flash
-(scripts), ElevenLabs (TTS), `node-cron`, `axios`, `dotenv`.
+(scripts + TTS, `@breezystack/lamejs` for MP3), `node-cron`, `axios`, `dotenv`.
 
 ## Layout
 
@@ -25,7 +25,7 @@ src/
     ├── fetch_prices.py         #    yfinance helper
     ├── fetchNews.js            # 3. news headlines (Serper)
     ├── generateScripts.js      # 4. Gemini → briefs.script (status=pending)
-    └── generateAudio.js        # 5. ElevenLabs → Storage → audio_url (status=ready)
+    └── generateAudio.js        # 5. Gemini TTS → MP3 → Storage → audio_url (status=ready)
 ```
 
 Stages run in order; the pipeline **fails fast** (any throw → `process.exit(1)`).

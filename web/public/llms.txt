@@ -20,7 +20,7 @@ BriefCast is an autonomous AI financial market agent designed specifically for I
 ## Architecture & Technology
 - **Pipeline Orchestration**: Scheduled batch processing via GitHub Actions and Node.js.
 - **AI Synthesis**: Google Gemini LLM for financial news extraction and script generation.
-- **Speech Synthesis**: ElevenLabs neural voice models.
+- **Speech Synthesis**: Google Gemini text-to-speech.
 - **Database & Auth**: Supabase (PostgreSQL with Row Level Security).
 - **Market Data Feeds**: NSE price feeds and Serper news aggregation.
 

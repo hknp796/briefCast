@@ -66,13 +66,24 @@ export async function runPipeline() {
     await runStage('news', () => fetchNews(tickers))
 
     // Stage 4: Generate personalised scripts per user
-    await runStage('scripts', generateScripts)
+    const scripts = await runStage('scripts', generateScripts)
 
     // Stage 5: Convert each script to an MP3 and store it
-    await runStage('audio', generateAudio)
+    const audio = await runStage('audio', generateAudio)
 
-    // Stage 6: Deliver each ready brief's audio link over WhatsApp
+    // Stage 6: Deliver each ready brief's audio over Telegram
     await runStage('delivery', deliverBriefs)
+
+    // Stages 4-5 catch per-user errors and report them as counts, so a stage
+    // can "succeed" while every user goes without a brief (this hid an
+    // exhausted ElevenLabs quota for a week). Delivery has already run for
+    // whatever did succeed — now fail the run so GitHub emails the owner.
+    const missing = []
+    if (scripts?.failed) missing.push(`${scripts.failed} script(s)`)
+    if (audio?.failed)   missing.push(`${audio.failed} audio file(s)`)
+    if (missing.length) {
+      throw new Error(`${missing.join(' and ')} failed — those users get no brief today. See the ✗ lines above.`)
+    }
 
     const totalDuration = Math.round((Date.now() - runStart) / 1000)
     console.log(`\n[pipeline] ✅ All stages complete in ${totalDuration}s`)

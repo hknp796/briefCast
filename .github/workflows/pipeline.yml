@@ -59,10 +59,16 @@ jobs:
           SUPABASE_URL:        ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           SERPER_API_KEY:      ${{ secrets.SERPER_API_KEY }}
-          GEMINI_API_KEY:      ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY:      ${{ secrets.GEMINI_API_KEY }}   # scripts AND audio (Gemini TTS)
+          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          # TTS overrides — optional repo VARIABLES. Unset = Gemini TTS with the
+          # defaults in generateAudio.js. TTS_PROVIDER=elevenlabs switches back
+          # (and then needs the two ElevenLabs secrets below).
+          TTS_PROVIDER:        ${{ vars.TTS_PROVIDER }}
+          GEMINI_TTS_MODEL:    ${{ vars.GEMINI_TTS_MODEL }}
+          GEMINI_TTS_VOICE:    ${{ vars.GEMINI_TTS_VOICE }}
           ELEVENLABS_API_KEY:  ${{ secrets.ELEVENLABS_API_KEY }}
           ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
-          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
           # A repo VARIABLE, not a secret (a chat_id isn't sensitive, and you
           # want to see/flip this one). Unset = serve every active user.
           PIPELINE_USER_ALLOWLIST: ${{ vars.PIPELINE_USER_ALLOWLIST }}

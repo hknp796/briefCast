@@ -71,7 +71,7 @@ create table if not exists public.briefs (
   user_id     uuid not null references public.profiles(id) on delete cascade,
   date        date not null default current_date,
   script      text,             -- Claude-generated script
-  audio_url   text,             -- ElevenLabs MP3 stored in Supabase Storage
+  audio_url   text,             -- TTS MP3 (Gemini) stored in Supabase Storage
   status      text not null default 'pending', -- 'pending' | 'ready' | 'failed'
   delivered   boolean not null default false,
   created_at  timestamptz not null default now(),

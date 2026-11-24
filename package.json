@@ -12,6 +12,7 @@
     "deliver:deploy": "npx supabase functions deploy deliver-briefs --use-api"
   },
   "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
     "@elevenlabs/elevenlabs-js": "^2.52.0",
     "@google/genai": "^2.8.0",
     "@supabase/supabase-js": "^2.39.0",

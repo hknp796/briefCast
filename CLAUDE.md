@@ -33,7 +33,9 @@ per-user.
 - **Market data:** Python 3 + `yfinance`, called from Node via `child_process`
 - **News:** Serper API (`google.serper.dev/news`)
 - **Script generation:** Google Gemini 2.5 Flash via `@google/genai` (free tier)
-- **Audio (TTS):** ElevenLabs via `@elevenlabs/elevenlabs-js`
+- **Audio (TTS):** Gemini TTS (`gemini-3.8-flash-tts`, same `@google/genai` client +
+  `GEMINI_API_KEY`), PCM → MP3 via `@breezystack/lamejs`. ElevenLabs
+  (`@elevenlabs/elevenlabs-js`) remains as a fallback behind `TTS_PROVIDER=elevenlabs`
 - **Delivery:** Telegram Bot API — outbound via `axios` (deliverBriefs.js)
 - **Signup bot:** Deno + `grammy`, deployed as a Supabase Edge Function
   (`supabase/functions/telegram-bot`) — NOT part of the Node app
@@ -79,7 +81,7 @@ briefcast/
         ├── fetch_prices.py       #   Python helper, yfinance
         ├── fetchNews.js          # stage 3: news headlines (Serper)
         ├── generateScripts.js    # stage 4: Gemini → brief script
-        ├── generateAudio.js      # stage 5: ElevenLabs → MP3 → Storage
+        ├── generateAudio.js      # stage 5: Gemini TTS → MP3 → Storage
         └── deliverBriefs.js      # stage 6: send audio over Telegram
 ```
 
@@ -100,6 +102,11 @@ Each stage is timed and logged to the `pipeline_logs` table via the `runStage()`
 wrapper in `index.js`. A failure in any stage aborts the run (fail-fast) — except
 delivery, which self-skips (does not abort) when `TELEGRAM_BOT_TOKEN` is unset, so
 briefs stay `ready`/`undelivered` and get picked up on the next run once configured.
+
+Stages 4 and 5 catch per-user errors and return `{success, failed}` counts rather
+than throwing. So after delivery, `runPipeline()` throws if either reported any
+`failed`. That makes the GitHub job go red (and email) whenever a user got no
+brief, while still delivering everyone who did.
 
 ---
 
@@ -130,8 +137,12 @@ SUPABASE_URL=https://xxxx.supabase.co     # base URL only — no /rest/v1, no tr
 SUPABASE_SERVICE_KEY=...                   # service_role key, NOT anon key
 SERPER_API_KEY=...
 GEMINI_API_KEY=...                         # free at aistudio.google.com
-ELEVENLABS_API_KEY=...
-ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL   # optional, defaults to "Sarah"
+                                            #   — used for scripts AND audio (TTS)
+TTS_PROVIDER=gemini                         # optional; "elevenlabs" switches back
+GEMINI_TTS_MODEL=gemini-3.8-flash-tts       # optional
+GEMINI_TTS_VOICE=Kore                       # optional; any Gemini prebuilt voice
+ELEVENLABS_API_KEY=...                      # only for TTS_PROVIDER=elevenlabs
+ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL   # only for TTS_PROVIDER=elevenlabs ("Sarah")
 TELEGRAM_BOT_TOKEN=...                      # from @BotFather; SAME token for the
                                             #   delivery step and the signup bot
 PYTHON_PATH=/Users/<you>/Desktop/briefcast/venv/bin/python3   # local only; omit on server
@@ -140,9 +151,10 @@ PIPELINE_USER_ALLOWLIST=391345830           # OPTIONAL pre-launch cost guard —
 
 `PIPELINE_USER_ALLOWLIST` is a comma-separated list of `telegram_chat_id`s. When
 set, the pipeline serves **only** those accounts; unset/empty serves every active
-user, which is the real production behaviour. It exists because ElevenLabs' free
-tier is ~6 briefs/month and the bot marks every new signup `is_active=true`, so
-one stranger running `/start` can eat the month's quota. Stages 1 and 4 apply it
+user, which is the real production behaviour. It exists because the bot marks every
+new signup `is_active=true`, so one stranger running `/start` spends free-tier
+quota (it was critical under ElevenLabs' ~6 briefs/month; Gemini TTS is roomier
+but still capped per day). Stages 1 and 4 apply it
 (`src/pipeline/allowlist.js`); stages 5-6 inherit the scope automatically, since
 they only ever work off the briefs stage 4 created. **Clear it before launch.**
 
@@ -199,9 +211,11 @@ installed by the standard setup actions. `PYTHON_PATH` is deliberately unset so
 `fetchMarketData.js` falls back to the runner's system `python3`.
 
 Setup:
-1. Repo → **Settings → Secrets and variables → Actions** → add all seven:
+1. Repo → **Settings → Secrets and variables → Actions** → add these five:
    `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SERPER_API_KEY`, `GEMINI_API_KEY`,
-   `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `TELEGRAM_BOT_TOKEN`.
+   `TELEGRAM_BOT_TOKEN`. (`ELEVENLABS_API_KEY` / `ELEVENLABS_VOICE_ID` are only
+   needed if you set the repo variable `TTS_PROVIDER=elevenlabs`. Optional repo
+   variables `GEMINI_TTS_MODEL` / `GEMINI_TTS_VOICE` override the TTS defaults.)
 2. Optionally add a repo **variable** (Variables tab, not Secrets)
    `PIPELINE_USER_ALLOWLIST` = your `telegram_chat_id`, to keep pre-launch runs
    scoped to one account. Delete the variable to serve everyone.
@@ -283,7 +297,8 @@ The landing page in `web/` is a separate deploy (Vercel, or a static host).
 - [x] Stage 2: market data (yfinance)
 - [x] Stage 3: news (Serper)
 - [x] Stage 4: script generation (Gemini)
-- [x] Stage 5: audio generation (ElevenLabs → Supabase Storage)
+- [x] Stage 5: audio generation (Gemini TTS → MP3 → Supabase Storage; switched
+      from ElevenLabs on 2026-11-24 after its free quota ran out)
 - [x] Stage 6: delivery (Telegram — bot sends the MP3, marks `delivered`)
 - [x] Orchestrator + cron scheduler
 - [x] Telegram signup bot (`supabase/functions/telegram-bot/`) — signup + watchlist over
@@ -385,10 +400,15 @@ The landing page in `web/` is a separate deploy (Vercel, or a static host).
     active; check that first if users mysteriously stop receiving briefs. It must
     be cleared (locally AND in the GitHub repo variable) before launch.
 
-14. **ElevenLabs free tier rejects some shared "library" voices** with
-    `402 paid_plan_required` (including defaults like Rachel/George/Brian/Lily). The
-    default voice is now "Sarah" (`EXAVITQu4vr4xnSDxMaL`); override via
-    `ELEVENLABS_VOICE_ID` if you hit a 402.
+14. **TTS failures used to be invisible.** ElevenLabs' free quota ran out on
+    2026-11-18 and every brief failed for a week while each stage logged
+    "success" (the failure only showed as `{"success":0,"failed":1}` inside the
+    message). `runPipeline()` now fails the run when any brief misses its script
+    or audio. Per-brief errors are printed only as `[generateAudio] ✗` lines in
+    the run log, not stored in the DB. Gemini TTS returns raw PCM
+    (`audio/L16;rate=24000`) or a WAV (`audio/wav`) depending on the model, and
+    `decodePcm()` handles both. If you fall back to ElevenLabs: its free tier
+    rejects some library voices with `402 paid_plan_required`, so use "Sarah".
 
 15. **The 3am IST run stamps briefs with the PREVIOUS UTC date** (it's 21:30 UTC).
     `deliverBriefs.js` therefore looks back to yesterday (UTC), not just today, and
@@ -411,8 +431,11 @@ The landing page in `web/` is a separate deploy (Vercel, or a static host).
   market data goes in).
 - **Serper** — free tier: 2,500 searches/month. At ~400 tickers/night that's
   ~12,000/month, so this will need a paid plan or caching once live.
-- **ElevenLabs** — free tier: ~10,000 chars/month (~6 full briefs). This is the
-  main paid dependency, and the reason `PIPELINE_USER_ALLOWLIST` exists: scoped to
-  one account a nightly run costs ~1,200 chars (~8 runs/month) instead of ~3,600. Consider `eleven_turbo_v2_5` model or alternative TTS
-  (Google Cloud TTS) to cut cost at scale.
+- **Gemini TTS** — one request per user per day (~3,000 tokens, ~30s per brief),
+  on the same free-tier key as scripts. Google doesn't publish a fixed free daily
+  cap per TTS model; check the AI Studio rate-limit page for
+  `gemini-3.8-flash-tts` — that number is roughly the free user ceiling. Above
+  it, Google Cloud TTS (`en-IN`/`hi-IN` voices, large free tier) or Sarvam
+  (best Hinglish, paid) are the next options.
+- **ElevenLabs** (fallback only) — free tier ~10,000 chars/month (~6 briefs).
 - **yfinance / Supabase** — free.

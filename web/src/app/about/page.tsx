@@ -108,7 +108,7 @@ export default function AboutPage() {
             <div className="rounded-lg border border-line-soft bg-surface/30 p-5">
               <h3 className="text-sm font-semibold text-bright">4. Neural Audio Generation & Delivery</h3>
               <p className="mt-1 text-sm text-muted">
-                ElevenLabs converts the script into natural, human-grade speech (in English or Hinglish), delivering the MP3 audio file directly into your Telegram inbox at your chosen time (7:00 AM IST by default).
+                Google Gemini converts the script into natural, human-grade speech (in English or Hinglish), delivering the MP3 audio file directly into your Telegram inbox at your chosen time (7:00 AM IST by default).
               </p>
             </div>
           </div>

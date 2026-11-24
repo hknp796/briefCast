@@ -1,10 +1,10 @@
 // ─────────────────────────────────────────────
 // Optional pre-launch cost guard.
 //
-// While BriefCast is being tested, ElevenLabs is the binding constraint: the
-// free tier is ~10,000 chars/month, which is only ~6 full briefs. One curious
-// stranger running /start and /add would quietly eat the month's quota, because
-// the bot marks every new profile is_active=true.
+// While BriefCast is being tested, every brief spends free-tier API quota
+// (Gemini scripts + TTS have daily caps; ElevenLabs, the old TTS, allowed only
+// ~6 briefs/month). One curious stranger running /start and /add would quietly
+// spend it, because the bot marks every new profile is_active=true.
 //
 // PIPELINE_USER_ALLOWLIST is a comma-separated list of telegram_chat_ids. When
 // set, the pipeline serves ONLY those accounts — stages 1 and 4 filter on it,
