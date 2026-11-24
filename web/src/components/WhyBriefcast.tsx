@@ -6,7 +6,7 @@ export default function WhyBriefcast() {
           <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-dawn">
             Pre-Market Preparation
           </p>
-          <h2 className="mt-4 font-serif text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
+          <h2 className="mt-4 font-display font-medium text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
             Why three minutes of focused audio beats forty-five minutes of morning noise.
           </h2>
           <p className="mt-5 text-[1.02rem] leading-relaxed text-muted">

@@ -23,9 +23,9 @@
   --color-up:         #4ade80;
   --color-down:       #f87171;
 
-  --font-sans:   var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono:   var(--font-geist-mono), ui-monospace, monospace;
-  --font-serif:  var(--font-instrument-serif), Georgia, serif;
+  --font-sans:   var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:   var(--font-terminal), ui-monospace, monospace;
+  --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
 html {
@@ -58,6 +58,16 @@ body {
   0%, 100% { transform: scaleY(0.35); }
   50%      { transform: scaleY(1); }
 }
+/* Hero backdrop: a quiet 64px grid that fades out from the centre */
+.hero-grid {
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: center top;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 100%);
+}
+
 .wave-bar {
   transform-origin: center;
   animation: wave 1.4s ease-in-out infinite;

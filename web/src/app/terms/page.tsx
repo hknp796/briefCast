@@ -26,7 +26,7 @@ export default function TermsPage() {
         </div>
 
         {/* Title */}
-        <h1 className="mt-6 font-serif text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
+        <h1 className="mt-6 font-display font-medium text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
           Terms of Service
         </h1>
         <p className="mt-4 text-[0.88rem] text-faint">
@@ -40,7 +40,7 @@ export default function TermsPage() {
           </p>
 
           <section className="space-y-4">
-            <h2 className="font-serif text-2xl text-bright">1. Nature of Service: Educational & Informational Only</h2>
+            <h2 className="font-display font-medium text-2xl text-bright">1. Nature of Service: Educational & Informational Only</h2>
             <p>
               BriefCast is an automated market information technology tool. All audio briefs, scripts, percentages, and summaries
               are generated solely for educational and informational purposes.
@@ -52,7 +52,7 @@ export default function TermsPage() {
           </section>
 
           <section className="space-y-4 border-t border-line-soft pt-10">
-            <h2 className="font-serif text-2xl text-bright">2. Assumption of Investment Risk & Limitation of Liability</h2>
+            <h2 className="font-display font-medium text-2xl text-bright">2. Assumption of Investment Risk & Limitation of Liability</h2>
             <p>
               Trading and investing in securities listed on the National Stock Exchange of India (NSE) or Bombay Stock Exchange (BSE) carries inherent market risks,
               including the complete loss of capital.
@@ -64,7 +64,7 @@ export default function TermsPage() {
           </section>
 
           <section className="space-y-4 border-t border-line-soft pt-10">
-            <h2 className="font-serif text-2xl text-bright">3. Data Accuracy & Third-Party Outages</h2>
+            <h2 className="font-display font-medium text-2xl text-bright">3. Data Accuracy & Third-Party Outages</h2>
             <p>
               Market prices, ADR quotes, and news headlines are obtained from publicly accessible APIs, exchange bhavcopies, and news sources.
               While we enforce rigorous validation routines, data feeds may experience unexpected delays, latency, or revisions beyond our control.
@@ -73,8 +73,9 @@ export default function TermsPage() {
           </section>
 
           <section className="space-y-4 border-t border-line-soft pt-10">
-            <h2 className="font-serif text-2xl text-bright">4. Subscriptions, Upgrades & Cancellations</h2>
+            <h2 className="font-display font-medium text-2xl text-bright">4. Subscriptions, Upgrades & Cancellations</h2>
             <ul className="list-disc pl-6 space-y-2">
+              <li><strong className="text-bright font-medium">Early Access:</strong> Payments are not live yet. Until they are, every account receives all currently available features free of charge, and no one is billed.</li>
               <li><strong className="text-bright font-medium">Free Tier:</strong> Permitted for personal use tracking up to 5 tickers at standard delivery times.</li>
               <li><strong className="text-bright font-medium">Paid Subscriptions:</strong> Premium tiers (Pro, Trader) provide expanded watchlists, custom delivery timings, and Hinglish audio support.</li>
               <li><strong className="text-bright font-medium">Self-Service Cancellation:</strong> Users can cancel paid subscriptions at any time with immediate effect. No complicated phone calls or paperwork required.</li>
@@ -82,7 +83,7 @@ export default function TermsPage() {
           </section>
 
           <section className="space-y-4 border-t border-line-soft pt-10">
-            <h2 className="font-serif text-2xl text-bright">5. Acceptable Use Policy</h2>
+            <h2 className="font-display font-medium text-2xl text-bright">5. Acceptable Use Policy</h2>
             <p>
               Users agree not to reverse-engineer, mass-scrape, or exploit the Telegram bot interface. BriefCast audio files and scripts
               are generated for individual, personal use and may not be redistributed on commercial tip channels without express written consent.
@@ -90,7 +91,7 @@ export default function TermsPage() {
           </section>
 
           <section className="space-y-4 border-t border-line-soft pt-10">
-            <h2 className="font-serif text-2xl text-bright">6. Governing Law & Dispute Resolution</h2>
+            <h2 className="font-display font-medium text-2xl text-bright">6. Governing Law & Dispute Resolution</h2>
             <p>
               These Terms shall be construed in accordance with and governed by the laws of India. Any legal dispute or controversy arising under
               these Terms shall be subject to the exclusive jurisdiction of the competent courts situated in Calicut (Kozhikode), Kerala, India.

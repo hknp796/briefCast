@@ -22,9 +22,9 @@ export default function SampleBrief() {
     <section id="sample" className="scroll-mt-20 border-t border-line-soft">
       <div className="mx-auto max-w-4xl px-5 py-24 sm:px-8">
         <p className="font-mono text-[0.72rem] uppercase tracking-[0.18em] text-dawn">
-          Tuesday, 8:00am IST
+          Tuesday, 7:00am IST
         </p>
-        <h2 className="mt-4 font-serif text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
+        <h2 className="mt-4 font-display font-medium text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
           This is what lands in your chat.
         </h2>
         <p className="mt-5 max-w-2xl text-[1.02rem] leading-relaxed text-muted">

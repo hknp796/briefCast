@@ -8,7 +8,7 @@ export default function Faq() {
       <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
         <div className="grid gap-14 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
-            <h2 className="font-serif text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
+            <h2 className="font-display font-medium text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
               Questions,
               <br />
               answered.

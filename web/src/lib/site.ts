@@ -40,7 +40,7 @@ export const plans = [
       "Up to 5 stocks",
       "Brief every trading day",
       "English",
-      "Delivered at 8:00am IST",
+      "Delivered at 7:00am IST",
     ],
     cta: "Start free",
     featured: false,
@@ -88,11 +88,11 @@ export const faqs = [
   },
   {
     q: "Which stocks can I add to my watchlist?",
-    a: "You can track any equity security listed on the National Stock Exchange of India (NSE), including Largecap, Midcap, and Smallcap stocks. Simply add the symbol without the .NS suffix—like /add INFY, /add TATAMOTORS, or /add RELIANCE. The bot confirms valid symbols instantly against official NSE listings.",
+    a: "You can track any equity security listed on the National Stock Exchange of India (NSE), including Largecap, Midcap, and Smallcap stocks. Simply add the symbol without the .NS suffix—like /add INFY, /add TATAMOTORS, or /add RELIANCE. If a symbol isn't listed on NSE, there's no price data for it and it is simply left out of your brief, so check /list if a stock never comes up.",
   },
   {
     q: "What time does the market brief arrive?",
-    a: "Every trading day before the 9:15am IST opening bell. The default delivery time is 8:00am IST, giving you plenty of time before the 9:00am pre-open session. Pro and Trader subscribers can customize their delivery time to match their morning schedule using /time.",
+    a: "Every trading day before the 9:15am IST opening bell. The default delivery time is 7:00am IST, giving you plenty of time before the 9:00am pre-open session. You can move it to suit your morning with /time, for example /time 06:30.",
   },
   {
     q: "Where does the market data and news come from?",
@@ -112,7 +112,7 @@ export const faqs = [
   },
   {
     q: "How do I stop or change my watchlist?",
-    a: "Message the bot inside Telegram. There is no billing or credit card to unwind on the free plan, and paid subscriptions can be paused or cancelled directly from the chat. You can add, edit, or remove stocks from your watchlist anytime with /add, /remove, and /list.",
+    a: "Message the bot inside Telegram. Add or remove stocks anytime with /add and /remove, and check what you're tracking with /list. To stop the briefs, remove every stock: no watchlist, no brief. There's no billing or card to unwind, because payments aren't live yet.",
   },
 ] as const;
 

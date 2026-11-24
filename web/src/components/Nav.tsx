@@ -1,5 +1,6 @@
 import Link from "next/link";
 import TelegramButton from "./TelegramButton";
+import MobileMenu from "./MobileMenu";
 import { site } from "@/lib/site";
 
 const links = [
@@ -37,7 +38,11 @@ export default function Nav() {
           ))}
         </ul>
 
-        <TelegramButton className="!px-5 !py-2.5 !text-sm">Start free</TelegramButton>
+        <div className="flex items-center gap-2">
+          {/* Below 360px the logo + button + menu toggle don't fit; the menu carries the CTA there */}
+          <TelegramButton className="!px-5 !py-2.5 !text-sm max-[359px]:hidden">Start free</TelegramButton>
+          <MobileMenu links={links} />
+        </div>
       </nav>
     </header>
   );

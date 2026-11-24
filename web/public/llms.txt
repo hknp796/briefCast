@@ -10,7 +10,7 @@ BriefCast is an autonomous AI financial market agent designed specifically for I
 - **Spoken Audio Delivery**: Converts personalized market intelligence into natural, concise audio (~3 minutes) using generative voice synthesis.
 - **Telegram Native**: No web dashboard or separate app install required; users configure watchlists, listen to audio briefs, and manage preferences entirely within Telegram (@briefcast_market_bot).
 - **Language Options**: English and Hinglish (Hindi + English) audio briefings.
-- **Scheduled Pre-Market Delivery**: Default delivery is at 8:00 AM IST, with custom delivery times available for active traders.
+- **Scheduled Pre-Market Delivery**: Default delivery is at 7:00 AM IST; any user can set their own time with /time.
 
 ## Target Audience
 - Indian retail stock traders (NSE / BSE).
@@ -25,8 +25,10 @@ BriefCast is an autonomous AI financial market agent designed specifically for I
 - **Market Data Feeds**: NSE price feeds and Serper news aggregation.
 
 ## Pricing & Plans
-- **Free**: Up to 5 stocks, daily morning brief, English, delivered at 8:00 AM IST. Free forever.
-- **Pro (₹199 / month)**: Up to 20 stocks, English or Hinglish, custom delivery time (e.g., 7:00 AM IST), deeper news coverage.
+Payments are not live yet: during early access every account gets all built features free. The plans below are planned launch pricing.
+
+- **Free**: Up to 5 stocks, daily morning brief, English, delivered at 7:00 AM IST. Free forever.
+- **Pro (₹199 / month)**: Up to 20 stocks, English or Hinglish, custom delivery time (e.g., 6:30 AM IST), deeper news coverage.
 - **Trader (₹499 / month)**: Up to 50 stocks, priority delivery, sector and benchmark index context.
 
 ## Official Links & Resources

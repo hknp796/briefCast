@@ -35,7 +35,7 @@ export default function Features() {
   return (
     <section className="border-t border-line-soft">
       <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
-        <h2 className="max-w-2xl font-serif text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
+        <h2 className="max-w-2xl font-display font-medium text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
           Built for the ten minutes before you open your terminal.
         </h2>
 

@@ -26,7 +26,7 @@ export default function EditorialPolicyPage() {
         </div>
 
         {/* Title */}
-        <h1 className="mt-6 font-serif text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
+        <h1 className="mt-6 font-display font-medium text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
           Editorial & Accuracy Policy
         </h1>
         <p className="mt-4 text-[0.88rem] text-faint">
@@ -36,7 +36,7 @@ export default function EditorialPolicyPage() {
         <div className="mt-10 space-y-12 text-[0.96rem] leading-relaxed text-muted">
           {/* Section 1 */}
           <section className="space-y-4">
-            <h2 className="font-serif text-2xl text-bright">1. Core Editorial Principles</h2>
+            <h2 className="font-display font-medium text-2xl text-bright">1. Core Editorial Principles</h2>
             <p>
               BriefCast is an objective morning intelligence service designed specifically for Indian retail traders.
               Our sole mission is to inform traders of factual overnight developments before the 9:15 AM IST opening bell.
@@ -53,7 +53,7 @@ export default function EditorialPolicyPage() {
 
           {/* Section 2 */}
           <section className="space-y-4 border-t border-line-soft pt-10">
-            <h2 className="font-serif text-2xl text-bright">2. Market Data Sourcing & Verification</h2>
+            <h2 className="font-display font-medium text-2xl text-bright">2. Market Data Sourcing & Verification</h2>
             <p>
               BriefCast aggregates market data nightly at 3:00 AM IST prior to morning delivery:
             </p>
@@ -66,7 +66,7 @@ export default function EditorialPolicyPage() {
 
           {/* Section 3 */}
           <section className="space-y-4 border-t border-line-soft pt-10">
-            <h2 className="font-serif text-2xl text-bright">3. Artificial Intelligence Guardrails & Fact-Checking</h2>
+            <h2 className="font-display font-medium text-2xl text-bright">3. Artificial Intelligence Guardrails & Fact-Checking</h2>
             <p>
               We utilize advanced Large Language Models (LLMs) to synthesize custom morning audio scripts from raw price and news data.
               To eliminate hallucinations and prevent misleading commentary, our pipeline enforces strict guardrails:
@@ -80,7 +80,7 @@ export default function EditorialPolicyPage() {
 
           {/* Section 4 */}
           <section className="space-y-4 border-t border-line-soft pt-10">
-            <h2 className="font-serif text-2xl text-bright">4. Corrections & Errata Policy</h2>
+            <h2 className="font-display font-medium text-2xl text-bright">4. Corrections & Errata Policy</h2>
             <p>
               We take accuracy seriously. Despite rigorous validation, market feeds may occasionally exhibit latency or corporate filings may undergo revision.
             </p>
@@ -97,7 +97,7 @@ export default function EditorialPolicyPage() {
           {/* Section 5: SEBI Disclosure */}
           <section id="sebi-disclosure" className="scroll-mt-20 rounded-xl border border-line-soft bg-surface/50 p-6 space-y-3">
             <span className="text-xs font-mono uppercase tracking-wider text-dawn">Regulatory Notice</span>
-            <h2 className="font-serif text-2xl text-bright">5. SEBI Regulatory Disclosure</h2>
+            <h2 className="font-display font-medium text-2xl text-bright">5. SEBI Regulatory Disclosure</h2>
             <p className="text-sm leading-relaxed text-muted">
               BriefCast is an automated technology platform providing algorithmic data aggregation for educational and informational purposes.
               BriefCast is not registered with the Securities and Exchange Board of India (SEBI) as an Investment Adviser (under SEBI IA Regulations, 2013)

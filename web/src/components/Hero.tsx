@@ -5,60 +5,62 @@ import ChatMock from "./ChatMock";
 export default function Hero() {
   return (
     <section className="relative overflow-hidden">
-      {/* Horizon glow — the sun coming up under the fold */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -bottom-40 h-[32rem] opacity-70"
-        style={{
-          background:
-            "radial-gradient(60% 100% at 50% 100%, rgba(247,164,60,0.16), transparent 70%)",
-        }}
-      />
+      {/* Faint grid, faded out toward the edges */}
+      <div aria-hidden className="hero-grid pointer-events-none absolute inset-0" />
 
-      <div className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 py-20 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10 lg:py-28">
-        <div>
-          {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2.5 rounded-full border border-line bg-surface/70 px-3.5 py-1.5">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-dawn opacity-70" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-dawn" />
-            </span>
-            <span className="text-[0.78rem] tracking-tight text-muted">
-              Every trading day, before the 9:15 open
-            </span>
-          </div>
+      <div className="relative mx-auto max-w-6xl px-5 pt-20 text-center sm:px-8 sm:pt-28">
+        <p className="inline-flex items-center gap-2 font-mono text-[0.72rem] uppercase tracking-[0.18em] text-dawn">
+          <span aria-hidden className="relative flex h-2.5 w-4 items-end justify-center overflow-hidden">
+            <span className="h-2 w-4 rounded-t-full bg-dawn" />
+          </span>
+          Before the 9:15 open
+        </p>
 
-          <h1 className="mt-7 font-serif text-[2.7rem] leading-[1.06] tracking-[-0.02em] sm:text-6xl lg:text-[4.1rem]">
-            Your watchlist,
-            <br />
-            <span className="text-dawn">read to you</span> before
-            <br />
-            the market opens.
-          </h1>
+        <h1 className="mx-auto mt-6 max-w-4xl text-balance font-display text-[2.5rem] font-medium leading-[1.05] tracking-[-0.035em] sm:text-6xl lg:text-[4.25rem]">
+          Your watchlist, read to you
+          <br className="hidden sm:block" /> before the market opens
+        </h1>
 
-          <p className="mt-7 max-w-xl text-[1.05rem] leading-relaxed text-muted">
-            BriefCast turns overnight price moves and news on <em className="not-italic text-bright">your</em> stocks
-            into a three-minute audio brief. It lands in Telegram while you&rsquo;re still making
-            chai — so you walk into the open already knowing why things moved.
-          </p>
+        <p className="mx-auto mt-6 max-w-lg text-[1.05rem] leading-relaxed text-muted">
+          A three-minute audio brief on the stocks you hold: what moved overnight
+          and why. It arrives in Telegram every trading morning.
+        </p>
 
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <TelegramButton />
-            <Link
-              href="#sample"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-line bg-surface/60 px-6 py-3.5 text-[0.95rem] font-medium tracking-tight text-bright transition-colors hover:border-faint hover:bg-surface-2"
-            >
-              Read a real brief
-            </Link>
-          </div>
-
-          <p className="mt-6 text-[0.82rem] text-faint">
-            Free to start · No app to install · Nothing to log into
-          </p>
+        <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+          <TelegramButton />
+          <Link
+            href="#sample"
+            className="inline-flex items-center justify-center rounded-full bg-surface-2 px-6 py-3.5 text-[0.95rem] font-medium text-bright transition-colors hover:bg-line"
+          >
+            Read a sample brief
+          </Link>
         </div>
 
-        <ChatMock />
+        <p className="mt-5 text-[0.82rem] text-faint">
+          Free to start. No app to install.
+        </p>
+
+        <div className="relative mx-auto mt-16 sm:mt-20">
+          {/* Sunrise glow, centred on the phone */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-[45%] h-[40rem] w-[56rem] max-w-[150vw] -translate-x-1/2 -translate-y-1/2"
+            style={{
+              background:
+                "radial-gradient(closest-side, rgba(247,164,60,0.26), rgba(247,164,60,0.07) 55%, transparent)",
+            }}
+          />
+          <div className="relative">
+            <ChatMock />
+          </div>
+        </div>
       </div>
+
+      {/* Phone sinks into the next section instead of ending on a hard edge */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-ink"
+      />
     </section>
   );
 }

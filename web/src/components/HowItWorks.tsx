@@ -17,7 +17,7 @@ const steps = [
   },
   {
     n: "03",
-    cmd: "8:00am",
+    cmd: "7:00am",
     title: "Wake up briefed",
     body:
       "While you sleep, BriefCast reads the overnight tape and the news, writes your brief, and speaks it. It's waiting when you wake.",
@@ -28,7 +28,7 @@ export default function HowItWorks() {
   return (
     <section id="how" className="scroll-mt-20 border-t border-line-soft bg-surface/30">
       <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
-        <h2 className="max-w-2xl font-serif text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
+        <h2 className="max-w-2xl font-display font-medium text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
           Three messages to set up. Then never again.
         </h2>
 

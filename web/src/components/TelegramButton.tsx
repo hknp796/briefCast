@@ -23,13 +23,13 @@ export default function TelegramButton({
 }: Props) {
   const base =
     "group inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3.5 " +
-    "text-[0.95rem] font-medium tracking-tight transition-all duration-200 " +
+    "text-[0.95rem] font-medium tracking-tight transition-colors duration-200 " +
     "focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-dawn";
 
   const styles =
     variant === "primary"
-      ? "bg-dawn text-[#16120b] hover:bg-dawn-soft shadow-[0_0_0_1px_rgba(247,164,60,0.4),0_8px_30px_-8px_rgba(247,164,60,0.55)] hover:shadow-[0_0_0_1px_rgba(247,164,60,0.6),0_10px_36px_-8px_rgba(247,164,60,0.7)]"
-      : "border border-line bg-surface/60 text-bright hover:border-faint hover:bg-surface-2";
+      ? "bg-dawn text-[#16120b] hover:bg-dawn-soft"
+      : "bg-surface-2 text-bright hover:bg-line";
 
   return (
     <Link href={BOT_URL} target="_blank" rel="noopener noreferrer" className={`${base} ${styles} ${className}`}>

@@ -12,7 +12,7 @@ export default function FinalCta() {
         }}
       />
       <div className="relative mx-auto max-w-3xl px-5 py-28 text-center sm:px-8">
-        <h2 className="font-serif text-4xl leading-[1.08] tracking-[-0.02em] sm:text-[3.4rem]">
+        <h2 className="font-display font-medium text-4xl leading-[1.08] tracking-[-0.02em] sm:text-[3.4rem]">
           Tomorrow morning, be the one
           <br className="hidden sm:block" /> who already knows.
         </h2>

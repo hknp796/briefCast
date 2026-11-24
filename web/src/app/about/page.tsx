@@ -27,7 +27,7 @@ export default function AboutPage() {
         </div>
 
         {/* Title */}
-        <h1 className="mt-6 font-serif text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
+        <h1 className="mt-6 font-display font-medium text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
           Calm, objective pre-market intelligence before the opening bell.
         </h1>
         <p className="mt-4 text-[0.88rem] text-faint">
@@ -51,7 +51,7 @@ export default function AboutPage() {
         {/* Founder & Author Byline */}
         <section className="mt-12 border-b border-line-soft pb-12">
           <span className="text-xs font-mono uppercase tracking-wider text-dawn">Author & Founder</span>
-          <h2 className="mt-2 font-serif text-2xl tracking-tight sm:text-3xl text-bright">
+          <h2 className="mt-2 font-display font-medium text-2xl tracking-tight sm:text-3xl text-bright">
             Who builds BriefCast
           </h2>
           <div className="mt-6 flex flex-col gap-6 rounded-xl border border-line-soft bg-surface/60 p-6 sm:flex-row sm:items-start">
@@ -83,7 +83,7 @@ export default function AboutPage() {
         {/* How the Pipeline Works */}
         <section className="mt-12 border-b border-line-soft pb-12">
           <span className="text-xs font-mono uppercase tracking-wider text-dawn">Technical Transparency</span>
-          <h2 className="mt-2 font-serif text-2xl tracking-tight sm:text-3xl text-bright">
+          <h2 className="mt-2 font-display font-medium text-2xl tracking-tight sm:text-3xl text-bright">
             How the autonomous briefing pipeline works
           </h2>
           <div className="mt-6 space-y-4">
@@ -108,7 +108,7 @@ export default function AboutPage() {
             <div className="rounded-lg border border-line-soft bg-surface/30 p-5">
               <h3 className="text-sm font-semibold text-bright">4. Neural Audio Generation & Delivery</h3>
               <p className="mt-1 text-sm text-muted">
-                ElevenLabs converts the script into natural, human-grade speech (in English or Hinglish), delivering the MP3 audio file directly into your Telegram inbox before 8:00 AM IST.
+                ElevenLabs converts the script into natural, human-grade speech (in English or Hinglish), delivering the MP3 audio file directly into your Telegram inbox at your chosen time (7:00 AM IST by default).
               </p>
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function AboutPage() {
         {/* SEBI Compliance & Non-Advisory Posture */}
         <section className="mt-12">
           <span className="text-xs font-mono uppercase tracking-wider text-dawn">Compliance & Trust</span>
-          <h2 className="mt-2 font-serif text-2xl tracking-tight sm:text-3xl text-bright">
+          <h2 className="mt-2 font-display font-medium text-2xl tracking-tight sm:text-3xl text-bright">
             Our non-advisory commitment
           </h2>
           <p className="mt-4 text-[0.95rem] leading-relaxed text-muted">

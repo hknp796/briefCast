@@ -11,18 +11,19 @@ const BARS = [
 
 export default function ChatMock() {
   return (
-    <div className="relative">
-      {/* Dawn bloom behind the phone */}
-      <div
-        aria-hidden
-        className="absolute -inset-10 -z-10 rounded-full opacity-60 blur-3xl"
-        style={{
-          background:
-            "radial-gradient(circle at 50% 65%, rgba(247,164,60,0.28), transparent 65%)",
-        }}
-      />
+    <div className="mx-auto w-full max-w-[330px] rounded-[2.75rem] border border-line bg-[#0b0d11] p-2 text-left shadow-[0_40px_120px_-40px_rgba(0,0,0,0.95)]">
+      <div className="overflow-hidden rounded-[2.3rem] bg-surface">
+        {/* Status bar */}
+        <div className="flex items-center justify-between px-7 pb-1 pt-3.5 text-[0.72rem] font-medium text-bright">
+          <span>7:00</span>
+          <span aria-hidden className="h-5 w-20 rounded-full bg-ink" />
+          <span aria-hidden className="flex items-center gap-1">
+            <span className="h-2 w-3.5 rounded-[3px] border border-muted p-px">
+              <span className="block h-full w-2/3 rounded-[1px] bg-bright" />
+            </span>
+          </span>
+        </div>
 
-      <div className="mx-auto w-full max-w-[340px] overflow-hidden rounded-[1.75rem] border border-line bg-surface shadow-[0_30px_80px_-30px_rgba(0,0,0,0.9)]">
         {/* Chat header */}
         <div className="flex items-center gap-3 border-b border-line-soft bg-surface-2 px-4 py-3">
           <span className="relative flex h-9 w-9 items-end justify-center overflow-hidden rounded-full bg-[#1b1f27]">
@@ -36,7 +37,7 @@ export default function ChatMock() {
         </div>
 
         {/* Message stream */}
-        <div className="space-y-2.5 px-3.5 py-5">
+        <div className="space-y-2.5 px-3.5 pb-28 pt-5">
           {/* Audio message */}
           <div className="max-w-[92%] rounded-2xl rounded-tl-md bg-surface-2 p-3.5">
             <div className="flex items-center gap-3">
@@ -69,18 +70,18 @@ export default function ChatMock() {
             <p className="mt-3 text-[0.82rem] leading-relaxed text-muted">
               Good morning Arjun ☀️ Your market brief is ready.
             </p>
-            <p className="mt-1.5 text-right font-mono text-[0.65rem] text-faint">8:00</p>
+            <p className="mt-1.5 text-right font-mono text-[0.65rem] text-faint">7:00</p>
           </div>
 
           {/* User reply — shows the bot is two-way */}
           <div className="ml-auto max-w-[75%] rounded-2xl rounded-br-md bg-[#2b2214] px-3.5 py-2.5">
             <p className="font-mono text-[0.82rem] text-dawn-soft">/add TATAMOTORS</p>
-            <p className="mt-1 text-right font-mono text-[0.65rem] text-faint">8:04</p>
+            <p className="mt-1 text-right font-mono text-[0.65rem] text-faint">7:04</p>
           </div>
 
           <div className="max-w-[75%] rounded-2xl rounded-tl-md bg-surface-2 px-3.5 py-2.5">
             <p className="text-[0.82rem] text-muted">✅ Added TATAMOTORS to your watchlist.</p>
-            <p className="mt-1 text-right font-mono text-[0.65rem] text-faint">8:04</p>
+            <p className="mt-1 text-right font-mono text-[0.65rem] text-faint">7:04</p>
           </div>
         </div>
       </div>

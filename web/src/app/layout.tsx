@@ -1,19 +1,21 @@
 import { Analytics } from "@vercel/analytics/next"
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Schibsted_Grotesk, IBM_Plex_Mono } from "next/font/google";
 import { site } from "@/lib/site";
 import JsonLd from "@/components/JsonLd";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-
-// Editorial serif, used only for display headlines — it does the work of making
-// the page read like a publication rather than a template.
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
+// One grotesk (drawn for a news publisher) for headlines and body, plus a
+// terminal mono for anything that is literally machine output.
+const bodySans = Schibsted_Grotesk({
+  variable: "--font-body",
   subsets: ["latin"],
-  weight: "400",
+});
+
+const terminalMono = IBM_Plex_Mono({
+  variable: "--font-terminal",
+  subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -55,7 +57,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en-IN"
-      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={`${bodySans.variable} ${terminalMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-ink text-bright">
         <JsonLd />

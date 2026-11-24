@@ -26,7 +26,7 @@ export default function ContactPage() {
         </div>
 
         {/* Title */}
-        <h1 className="mt-6 font-serif text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
+        <h1 className="mt-6 font-display font-medium text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
           Get in touch with us.
         </h1>
         <p className="mt-4 text-[0.95rem] text-muted">
@@ -42,7 +42,7 @@ export default function ContactPage() {
           <div className="rounded-xl border border-line-soft bg-surface/50 p-6 flex flex-col justify-between">
             <div>
               <span className="text-xs font-mono uppercase tracking-wider text-dawn">Direct & Fastest</span>
-              <h3 className="mt-2 font-serif text-xl text-bright">Telegram Support</h3>
+              <h3 className="mt-2 font-display font-medium text-xl text-bright">Telegram Support</h3>
               <p className="mt-3 text-sm leading-relaxed text-muted">
                 Message the bot directly on Telegram for real-time commands like <code className="text-bright">/help</code>, <code className="text-bright">/time</code>, or to manage your stocks.
               </p>
@@ -64,7 +64,7 @@ export default function ContactPage() {
           <div className="rounded-xl border border-line-soft bg-surface/50 p-6 flex flex-col justify-between">
             <div>
               <span className="text-xs font-mono uppercase tracking-wider text-dawn">Official Inquiries</span>
-              <h3 className="mt-2 font-serif text-xl text-bright">Email Support</h3>
+              <h3 className="mt-2 font-display font-medium text-xl text-bright">Email Support</h3>
               <p className="mt-3 text-sm leading-relaxed text-muted">
                 For detailed queries, billing assistance, technical feedback, or corporate inquiries, write directly to our founder and engineering team.
               </p>
@@ -84,7 +84,7 @@ export default function ContactPage() {
         {/* Operating Address & Physical Location */}
         <div className="mt-12 rounded-xl border border-line-soft bg-surface/30 p-8">
           <span className="text-xs font-mono uppercase tracking-wider text-dawn">Physical Location & Jurisdiction</span>
-          <h2 className="mt-2 font-serif text-2xl text-bright">Operating Headquarters</h2>
+          <h2 className="mt-2 font-display font-medium text-2xl text-bright">Operating Headquarters</h2>
           <p className="mt-3 text-sm leading-relaxed text-muted max-w-xl">
             BriefCast is developed, maintained, and operated out of Calicut, Kerala, India.
           </p>

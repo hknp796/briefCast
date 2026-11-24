@@ -16,7 +16,7 @@ export default function Pricing() {
     <section id="pricing" className="scroll-mt-20 border-t border-line-soft bg-surface/30">
       <div className="mx-auto max-w-6xl px-5 py-24 sm:px-8">
         <div className="max-w-2xl">
-          <h2 className="font-serif text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
+          <h2 className="font-display font-medium text-4xl leading-[1.1] tracking-[-0.02em] sm:text-5xl">
             Cheaper than one bad morning.
           </h2>
           <p className="mt-5 text-[1.02rem] leading-relaxed text-muted">
@@ -45,7 +45,7 @@ export default function Pricing() {
               <p className="mt-1.5 text-[0.9rem] text-muted">{p.pitch}</p>
 
               <div className="mt-6 flex items-baseline gap-2">
-                <span className="font-serif text-5xl tracking-tight">{p.price}</span>
+                <span className="font-display font-medium text-5xl tracking-tight">{p.price}</span>
                 <span className="text-[0.85rem] text-faint">{p.cadence}</span>
               </div>
 
@@ -71,7 +71,9 @@ export default function Pricing() {
         </div>
 
         <p className="mt-8 text-[0.82rem] leading-relaxed text-faint">
-          Paid plans bill in INR. Prices shown are launch pricing and may change.
+          Payments aren&rsquo;t live yet. During early access every account gets every feature that&rsquo;s
+          built today, including Hinglish and your own delivery time, free. Prices shown are planned
+          launch pricing in INR and may change.
         </p>
       </div>
     </section>

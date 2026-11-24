@@ -21,8 +21,10 @@ from the pipeline.
 - Next.js 16 (App Router) + React 19 + TypeScript
 - Tailwind CSS v4 — theme tokens live in `src/app/globals.css` under `@theme`,
   **not** in a `tailwind.config.js` (v4 has no config file by default)
-- Fonts via `next/font/google`: Geist (sans), Geist Mono (mono, used for tickers,
-  commands and timestamps), Instrument Serif (display headlines only)
+- Fonts via `next/font/google`: Schibsted Grotesk (body AND headlines — headlines use
+  `font-display font-medium` with tight negative tracking), IBM Plex Mono (tickers,
+  commands, timestamps, eyebrow labels). No serif. Avoid Geist/Inter/Instrument Serif —
+  they are the stock AI-template look the user explicitly rejected
 - `turbopack.root` is pinned in `next.config.ts` — the repo root has its own
   lockfile, so Next otherwise infers the wrong workspace root
 
@@ -49,8 +51,10 @@ web/src/
   block. The palette is "pre-dawn": `ink` ground, `dawn` amber accent, `bright`/
   `muted`/`faint` type ramp, `up`/`down` for gains and losses. Use the tokens
   (`bg-ink`, `text-muted`, `border-line`), never raw hex in components.
-- **Serif for display headlines only** (`font-serif`), sans for everything else,
+- **Headlines are `font-display`** (the grotesk at medium weight), sans for body,
   mono for anything that is literally machine output — tickers, `/commands`, times.
+- **Keep it calm:** flat buttons (no glow shadows), no pulsing pills. The hero is centred
+  with a faint `.hero-grid` and one amber glow behind the phone-framed `ChatMock`.
 - **No hydration-unsafe values.** Waveform bar heights are derived deterministically,
   never `Math.random()`.
 - Anything market-facing must keep the "information, not advice" posture. The SEBI
